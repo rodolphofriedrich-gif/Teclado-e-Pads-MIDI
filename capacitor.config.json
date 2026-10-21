@@ -1,5 +1,5 @@
 {
-  "appId": "com.midi.controller.keyboard",
+  "appId": "com.rodolpho.tecladoepads.midi",
   "appName": "Teclado e Pads MIDI",
   "webDir": "dist",
   "server": {
