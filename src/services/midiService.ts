@@ -55,14 +55,20 @@ class MidiService {
     try {
       this.nativeListenerHandle = await NativeMidi.addListener('midiMessage', (data) => {
         if (!data || !Array.isArray(data.data)) return;
-        this.handleIncomingBytes(data.data, data.sourceId != null ? String(data.sourceId) : undefined);
+        this.handleIncomingBytes(
+          data.data,
+          data.sourceId != null ? String(data.sourceId) : undefined
+        );
       });
     } catch (error) {
       console.error('Não foi possível registrar o listener MIDI:', error);
     }
   }
 
-  public setCallbacks(onRefresh: (destinations?: MidiDestination[]) => void, onDisconnect: (destination: MidiDestination) => void): void {
+  public setCallbacks(
+    onRefresh: (destinations?: MidiDestination[]) => void,
+    onDisconnect: (destination: MidiDestination) => void
+  ): void {
     this.onRefreshCallback = onRefresh;
     this.onDisconnectCallback = onDisconnect;
   }
@@ -85,7 +91,10 @@ class MidiService {
           id: String(device.id),
           name: device.name,
           displayName: device.displayName || device.name,
-          type: type === 'usb' || type === 'ble' || type === 'virtual' || type === 'local' ? type : 'usb',
+          type:
+            type === 'usb' || type === 'ble' || type === 'virtual' || type === 'local'
+              ? type
+              : 'usb',
           manufacturer: device.manufacturer,
           inputPortCount: device.inputPortCount,
           outputPortCount: device.outputPortCount,
@@ -101,7 +110,10 @@ class MidiService {
         outputPortCount: 0,
       };
 
-      const merged = [virtualKeyboard, ...nativeDevices.filter((d) => d.id !== virtualKeyboard.id)];
+      const merged = [
+        virtualKeyboard,
+        ...nativeDevices.filter((d) => d.id !== virtualKeyboard.id),
+      ];
 
       for (const ble of this.scannedBleDevices) {
         if (!merged.some((d) => d.bleAddress === ble.bleAddress || d.id === ble.id)) {
@@ -120,17 +132,24 @@ class MidiService {
 
   public async scanBleDevice(): Promise<any[]> {
     try {
+      // BLE é opcional no plugin nativo Android — protege contra inexistência.
+      if (!NativeMidi.scanBleDevices) {
+        console.warn('Plugin nativo não expõe scanBleDevices');
+        return [];
+      }
       const result = await NativeMidi.scanBleDevices({ durationMs: 10000 });
       const devices = result.devices || [];
+
       this.scannedBleDevices = devices.map((dev: any) => ({
         id: `ble-${dev.address}`,
         name: dev.name,
         displayName: `${dev.name} (BLE)`,
-        type: 'ble',
+        type: 'ble' as const,
         bleAddress: dev.address,
         inputPortCount: 1,
         outputPortCount: 1,
       }));
+
       await this.refreshDevices();
       return devices;
     } catch (error) {
@@ -139,9 +158,17 @@ class MidiService {
     }
   }
 
-  public getDestinations(): MidiDestination[] { return [...this.destinations]; }
-  public setRouteConfig(config: MidiRouteConfig): void { this.routeConfig = { ...config }; }
-  public getRouteConfig(): MidiRouteConfig { return { ...this.routeConfig }; }
+  public getDestinations(): MidiDestination[] {
+    return [...this.destinations];
+  }
+
+  public setRouteConfig(config: MidiRouteConfig): void {
+    this.routeConfig = { ...config };
+  }
+
+  public getRouteConfig(): MidiRouteConfig {
+    return { ...this.routeConfig };
+  }
 
   public async connect(destination: MidiDestination): Promise<void> {
     await this.connectOutput(destination);
@@ -151,20 +178,31 @@ class MidiService {
     if (this.connectedOutput && this.connectedOutput.id !== destination.id) {
       await this.disconnectOutput();
     }
+
     if (destination.id !== 'virtual-main') {
       if (destination.type === 'ble' && destination.bleAddress) {
-        await NativeMidi.connectBleMidi({ address: destination.bleAddress, outputPortIndex: 0, inputPortIndex: 0 });
+        if (!NativeMidi.connectBleMidi) {
+          throw new Error('Este dispositivo não suporta conexão MIDI BLE.');
+        }
+        await NativeMidi.connectBleMidi({
+          address: destination.bleAddress,
+          outputPortIndex: 0,
+          inputPortIndex: 0,
+        });
       } else {
         await NativeMidi.connectOutput({ id: String(destination.id), portIndex: 0 });
       }
     }
+
     this.connectedOutput = destination;
   }
 
   public async disconnect(): Promise<void> {
     const previousDestination = this.connectedOutput;
     await this.disconnectOutput();
-    if (previousDestination) this.onDisconnectCallback?.(previousDestination);
+    if (previousDestination) {
+      this.onDisconnectCallback?.(previousDestination);
+    }
   }
 
   public async disconnectOutput(): Promise<void> {
@@ -201,31 +239,58 @@ class MidiService {
   }
 
   public async isBleServerRunning(): Promise<boolean> {
-    try { return (await NativeMidi.isBleServerRunning()).active === true; } catch { return false; }
+    try {
+      return (await NativeMidi.isBleServerRunning()).active === true;
+    } catch {
+      return false;
+    }
   }
+
   public async startBleServer(): Promise<boolean> {
-    try { return (await NativeMidi.startBleServer()).active === true; } catch { return false; }
+    try {
+      return (await NativeMidi.startBleServer()).active === true;
+    } catch {
+      return false;
+    }
   }
-  public async stopBleServer(): Promise<void> { await NativeMidi.stopBleServer(); }
+
+  public async stopBleServer(): Promise<void> {
+    await NativeMidi.stopBleServer();
+  }
 
   public addActivityListener(listener: (velocity: number) => void): void {
     if (!this.activityListeners.includes(listener)) this.activityListeners.push(listener);
   }
+
   public removeActivityListener(listener: (velocity: number) => void): void {
     this.activityListeners = this.activityListeners.filter((item) => item !== listener);
   }
 
-  public async sendKeyboardNote(channel: number, note: number, velocity: number, isNoteOn: boolean): Promise<{ hex: string }> {
+  public async sendKeyboardNote(
+    channel: number,
+    note: number,
+    velocity: number,
+    isNoteOn: boolean
+  ): Promise<{ hex: string }> {
     const safeChannel = this.clamp(Math.trunc(channel), 1, 16);
     const safeNote = this.clamp(Math.trunc(note), 0, 127);
     const safeVelocity = this.clamp(Math.trunc(velocity), 0, 127);
-    const status = isNoteOn && safeVelocity > 0 ? 0x90 + safeChannel - 1 : 0x80 + safeChannel - 1;
+    const status =
+      isNoteOn && safeVelocity > 0 ? 0x90 + safeChannel - 1 : 0x80 + safeChannel - 1;
     this.sendRoutedMessage(status, safeNote, safeVelocity);
-    return { hex: [status, safeNote, safeVelocity].map((v) => v.toString(16).padStart(2, '0')).join(' ') };
+    return {
+      hex: [status, safeNote, safeVelocity]
+        .map((v) => v.toString(16).padStart(2, '0'))
+        .join(' '),
+    };
   }
 
-  public async sendControlChange(channel: number, controller: number, value: number): Promise<{ hex: string }> {
-    const status = 0xB0 + this.clamp(Math.trunc(channel), 1, 16) - 1;
+  public async sendControlChange(
+    channel: number,
+    controller: number,
+    value: number
+  ): Promise<{ hex: string }> {
+    const status = 0xb0 + this.clamp(Math.trunc(channel), 1, 16) - 1;
     const cc = this.clamp(Math.trunc(controller), 0, 127);
     const safeValue = this.clamp(Math.trunc(value), 0, 127);
     this.sendRoutedMessage(status, cc, safeValue);
@@ -233,11 +298,11 @@ class MidiService {
   }
 
   public async sendProgramChange(channel: number, program: number): Promise<{ hex: string }> {
-    const status = 0xC0 + this.clamp(Math.trunc(channel), 1, 16) - 1;
+    const status = 0xc0 + this.clamp(Math.trunc(channel), 1, 16) - 1;
     const safeProgram = this.clamp(Math.trunc(program), 0, 127);
     if (this.routeConfig.enabled && this.routeConfig.allowProgramChange) {
-      const finalChannel = this.getOutputChannel((status & 0x0F) + 1);
-      await this.transmitBytesNow([0xC0 + finalChannel - 1, safeProgram]);
+      const finalChannel = this.getOutputChannel((status & 0x0f) + 1);
+      await this.transmitBytesNow([0xc0 + finalChannel - 1, safeProgram]);
     }
     return { hex: this.toHex([status, safeProgram]) };
   }
@@ -245,53 +310,64 @@ class MidiService {
   public async sendPitchBend(channel: number, value: number): Promise<{ hex: string }> {
     const safeChannel = this.clamp(Math.trunc(channel), 1, 16);
     const safeValue = this.clamp(Math.trunc(value), 0, 16383);
-    const status = 0xE0 + safeChannel - 1;
-    const lsb = safeValue & 0x7F;
-    const msb = (safeValue >> 7) & 0x7F;
+    const status = 0xe0 + safeChannel - 1;
+    const lsb = safeValue & 0x7f;
+    const msb = (safeValue >> 7) & 0x7f;
     if (this.routeConfig.enabled && this.routeConfig.allowPitchBend) {
       const finalChannel = this.getOutputChannel(safeChannel);
-      await this.transmitBytesNow([0xE0 + finalChannel - 1, lsb, msb]);
+      await this.transmitBytesNow([0xe0 + finalChannel - 1, lsb, msb]);
     }
     return { hex: this.toHex([status, lsb, msb]) };
   }
 
-  /** NOVO: Channel Pressure (Aftertouch) — necessário para MidiControlsScreen */
-  public async sendChannelPressure(channel: number, pressure: number): Promise<{ hex: string }> {
+  /** Channel Pressure (Aftertouch) — necessário para MidiControlsScreen aplicar presets. */
+  public async sendChannelPressure(
+    channel: number,
+    pressure: number
+  ): Promise<{ hex: string }> {
     const safeChannel = this.clamp(Math.trunc(channel), 1, 16);
     const value = this.clamp(Math.trunc(pressure), 0, 127);
     if (this.routeConfig.enabled) {
       const finalChannel = this.getOutputChannel(safeChannel);
-      await this.transmitBytesNow([0xD0 + finalChannel - 1, value]);
+      await this.transmitBytesNow([0xd0 + finalChannel - 1, value]);
     }
-    return { hex: this.toHex([0xD0 + safeChannel - 1, value]) };
+    return { hex: this.toHex([0xd0 + safeChannel - 1, value]) };
   }
 
   public async sendPanic(channels: number[]): Promise<void> {
     const destination = this.connectedOutput;
     if (!destination || destination.id === 'virtual-main') return;
+
     for (const ch of channels) {
       const safeCh = this.clamp(Math.trunc(ch), 1, 16);
-      const status = 0xB0 + safeCh - 1;
-      await this.transmitBytesNow([status, 120, 0], destination);
-      await this.transmitBytesNow([status, 121, 0], destination);
-      await this.transmitBytesNow([status, 123, 0], destination);
+      const status = 0xb0 + safeCh - 1;
+      await this.transmitBytesNow([status, 120, 0], destination); // All Sound Off
+      await this.transmitBytesNow([status, 121, 0], destination); // Reset All Controllers
+      await this.transmitBytesNow([status, 123, 0], destination); // All Notes Off
     }
   }
 
   public sendRoutedMessage(status: number, data1: number, data2: number): void {
     if (!this.routeConfig.enabled) return;
-    const command = status & 0xF0;
-    const inputChannel = (status & 0x0F) + 1;
+    const command = status & 0xf0;
+    const inputChannel = (status & 0x0f) + 1;
 
     if (this.routeConfig.inputChannel > 0 && inputChannel !== this.routeConfig.inputChannel) return;
-    if (command === 0x90 || command === 0x80) { if (!this.routeConfig.allowNotes) return; }
-    else if (command === 0xB0 && !this.routeConfig.allowControlChange) return;
-    else if (command === 0xC0 && !this.routeConfig.allowProgramChange) return;
-    else if (command === 0xE0 && !this.routeConfig.allowPitchBend) return;
+    if (command === 0x90 || command === 0x80) {
+      if (!this.routeConfig.allowNotes) return;
+    } else if (command === 0xb0 && !this.routeConfig.allowControlChange) return;
+    else if (command === 0xc0 && !this.routeConfig.allowProgramChange) return;
+    else if (command === 0xe0 && !this.routeConfig.allowPitchBend) return;
 
     const outputChannel = this.getOutputChannel(inputChannel);
-    if (command === 0xC0) { void this.transmitBytesNow([0xC0 + outputChannel - 1, this.clamp(data1, 0, 127)]); return; }
-    if (command === 0xD0) { void this.transmitBytesNow([0xD0 + outputChannel - 1, this.clamp(data1, 0, 127)]); return; }
+    if (command === 0xc0) {
+      void this.transmitBytesNow([0xc0 + outputChannel - 1, this.clamp(data1, 0, 127)]);
+      return;
+    }
+    if (command === 0xd0) {
+      void this.transmitBytesNow([0xd0 + outputChannel - 1, this.clamp(data1, 0, 127)]);
+      return;
+    }
 
     let finalData1 = this.clamp(data1, 0, 127);
     let finalData2 = this.clamp(data2, 0, 127);
@@ -299,26 +375,37 @@ class MidiService {
     if (command === 0x90 || command === 0x80) {
       finalData1 = this.clamp(finalData1 + this.routeConfig.transpose, 0, 127);
       if (command === 0x90 && finalData2 > 0) {
-        finalData2 = this.routeConfig.fixedVelocity > 0
-          ? this.routeConfig.fixedVelocity
-          : this.clamp(finalData2, this.routeConfig.velocityMin, this.routeConfig.velocityMax);
+        finalData2 =
+          this.routeConfig.fixedVelocity > 0
+            ? this.routeConfig.fixedVelocity
+            : this.clamp(
+                finalData2,
+                this.routeConfig.velocityMin,
+                this.routeConfig.velocityMax
+              );
       }
     }
+
     void this.transmitBytesNow([command + outputChannel - 1, finalData1, finalData2]);
   }
 
   private getOutputChannel(inputChannel: number): number {
-    return this.routeConfig.outputChannel > 0 ? this.clamp(this.routeConfig.outputChannel, 1, 16) : inputChannel;
+    return this.routeConfig.outputChannel > 0
+      ? this.clamp(this.routeConfig.outputChannel, 1, 16)
+      : inputChannel;
   }
 
-  private async transmitBytesNow(bytes: number[], targetDest?: MidiDestination | null): Promise<void> {
+  private async transmitBytesNow(
+    bytes: number[],
+    targetDest?: MidiDestination | null
+  ): Promise<void> {
     const destination = targetDest !== undefined ? targetDest : this.connectedOutput;
     if (!destination || destination.id === 'virtual-main') return;
 
-    // NOVO: loga saída (TX) para o Monitor
+    // Loga TX (para o MidiMonitorScreen)
     if (bytes.length >= 2) {
-      const status = bytes[0] & 0xFF;
-      if (status >= 0x80 && status < 0xF0) {
+      const status = bytes[0] & 0xff;
+      if (status >= 0x80 && status < 0xf0) {
         this.notifyListeners({
           status,
           data1: bytes[1] ?? 0,
@@ -331,7 +418,10 @@ class MidiService {
     }
 
     try {
-      await NativeMidi.sendTo({ id: destination.bleAddress || String(destination.id), data: bytes });
+      await NativeMidi.sendTo({
+        id: destination.bleAddress || String(destination.id),
+        data: bytes,
+      });
     } catch (error) {
       console.error('Erro ao transmitir mensagem MIDI:', error);
     }
@@ -341,50 +431,70 @@ class MidiService {
     const destination = this.connectedOutput;
     if (!destination || destination.id === 'virtual-main') return;
     for (let channel = 1; channel <= 16; channel++) {
-      const status = 0xB0 + channel - 1;
+      const status = 0xb0 + channel - 1;
       await this.transmitBytesNow([status, 123, 0], destination);
     }
   }
 
   public handleIncomingBytes(bytes: number[], sourceId?: string): void {
     if (!Array.isArray(bytes) || bytes.length < 2) return;
-    const status = bytes[0] & 0xFF;
-    if (status < 0x80 || status >= 0xF0) return;
-    const command = status & 0xF0;
-    const requiredLength = command === 0xC0 || command === 0xD0 ? 2 : 3;
+    const status = bytes[0] & 0xff;
+    if (status < 0x80 || status >= 0xf0) return;
+    const command = status & 0xf0;
+    const requiredLength = command === 0xc0 || command === 0xd0 ? 2 : 3;
     if (bytes.length < requiredLength) return;
 
     const data1 = this.clamp(bytes[1], 0, 127);
     const data2 = requiredLength === 3 ? this.clamp(bytes[2], 0, 127) : 0;
 
+    // VU Meter: dispara em Note On
     if (command === 0x90 && data2 > 0) {
-      this.activityListeners.forEach((listener) => { try { listener(data2); } catch {} });
+      this.activityListeners.forEach((listener) => {
+        try {
+          listener(data2);
+        } catch {}
+      });
     }
 
-    this.notifyListeners({ status, data1, data2, timestamp: Date.now(), direction: 'RX', sourceId });
+    this.notifyListeners({
+      status,
+      data1,
+      data2,
+      timestamp: Date.now(),
+      direction: 'RX',
+      sourceId,
+    });
 
     if (this.routeConfig.source === 'device') {
       if (this.routeConfig.sourceId && sourceId !== this.routeConfig.sourceId) return;
     } else if (sourceId && sourceId !== 'virtual-main') {
       return;
     }
+
     this.sendRoutedMessage(status, data1, data2);
   }
 
   private notifyListeners(message: MidiMessage): void {
     this.messageListeners.forEach((listener) => {
-      try { listener(message); } catch (error) { console.error('Erro em listener MIDI:', error); }
+      try {
+        listener(message);
+      } catch (error) {
+        console.error('Erro em listener MIDI:', error);
+      }
     });
   }
 
   public addMessageListener(listener: (message: MidiMessage) => void): void {
     if (!this.messageListeners.includes(listener)) this.messageListeners.push(listener);
   }
+
   public removeMessageListener(listener: (message: MidiMessage) => void): void {
     this.messageListeners = this.messageListeners.filter((item) => item !== listener);
   }
 
-  public getConnectedDestination(): MidiDestination | null { return this.connectedOutput; }
+  public getConnectedDestination(): MidiDestination | null {
+    return this.connectedOutput;
+  }
 
   public async dispose(): Promise<void> {
     await this.nativeListenerHandle?.remove();
@@ -394,6 +504,7 @@ class MidiService {
   private clamp(value: number, minimum: number, maximum: number): number {
     return Math.max(minimum, Math.min(maximum, value));
   }
+
   private toHex(bytes: number[]): string {
     return bytes.map((v) => v.toString(16).padStart(2, '0')).join(' ');
   }
