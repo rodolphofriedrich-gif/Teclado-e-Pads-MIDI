@@ -1,0 +1,11 @@
+{
+  "name": "Teclado e Pads MIDI",
+  "description": "Teclado e pads MIDI virtuais.",
+  "requestFramePermissions": [
+    "midi",
+    "bluetooth"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

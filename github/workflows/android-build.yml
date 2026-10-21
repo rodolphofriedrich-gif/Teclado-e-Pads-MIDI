@@ -1,0 +1,47 @@
+name: Android CI / Build APK
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout do Código
+      uses: actions/checkout@v4
+
+    - name: Configurar Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 22
+
+    - name: Configurar JDK 21
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '21'
+
+    - name: Instalar Dependências Web e Capacitor
+      run: |
+        npm install
+        npm run build
+        npx cap sync android
+
+    - name: Configurar o Gradle
+      uses: gradle/actions/setup-gradle@v3
+
+    - name: Compilar APK de Debug (Android)
+      run: |
+        cd android
+        chmod +x gradlew
+        ./gradlew assembleDebug
+
+    - name: Salvar o APK gerado como Artefato
+      uses: actions/upload-artifact@v4
+      with:
+        name: app-debug-apk
+        path: android/app/build/outputs/apk/debug/app-debug.apk

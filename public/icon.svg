@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#111c32"/><stop offset="1" stop-color="#050914"/></linearGradient>
+    <linearGradient id="cyan" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#67e8f9"/><stop offset="1" stop-color="#3b82f6"/></linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <rect x="22" y="22" width="468" height="468" rx="94" fill="none" stroke="#67e8f9" stroke-opacity=".18" stroke-width="4"/>
+  <g transform="translate(58 94)">
+    <rect x="0" y="0" width="396" height="176" rx="18" fill="#17243a" stroke="#3b82f6" stroke-opacity=".65" stroke-width="5"/>
+    <g fill="#f8fafc" stroke="#94a3b8" stroke-width="3">
+      <rect x="15" y="15" width="52" height="146" rx="5"/><rect x="67" y="15" width="52" height="146" rx="5"/><rect x="119" y="15" width="52" height="146" rx="5"/><rect x="171" y="15" width="52" height="146" rx="5"/><rect x="223" y="15" width="52" height="146" rx="5"/><rect x="275" y="15" width="52" height="146" rx="5"/><rect x="327" y="15" width="52" height="146" rx="5"/>
+    </g>
+    <g fill="#0b1220"><rect x="51" y="15" width="31" height="88" rx="4"/><rect x="103" y="15" width="31" height="88" rx="4"/><rect x="207" y="15" width="31" height="88" rx="4"/><rect x="259" y="15" width="31" height="88" rx="4"/><rect x="311" y="15" width="31" height="88" rx="4"/></g>
+  </g>
+  <g transform="translate(116 305)">
+    <rect width="280" height="122" rx="17" fill="#111c32" stroke="#334155" stroke-width="4"/>
+    <g fill="url(#cyan)" stroke="#a5f3fc" stroke-opacity=".65" stroke-width="2">
+      <rect x="13" y="13" width="54" height="43" rx="8"/><rect x="78" y="13" width="54" height="43" rx="8"/><rect x="143" y="13" width="54" height="43" rx="8"/><rect x="208" y="13" width="54" height="43" rx="8"/>
+      <rect x="13" y="66" width="54" height="43" rx="8"/><rect x="78" y="66" width="54" height="43" rx="8"/><rect x="143" y="66" width="54" height="43" rx="8"/><rect x="208" y="66" width="54" height="43" rx="8"/>
+    </g>
+    <g fill="#082f49" opacity=".75"><circle cx="40" cy="34" r="5"/><circle cx="105" cy="34" r="5"/><circle cx="170" cy="34" r="5"/><circle cx="235" cy="34" r="5"/><circle cx="40" cy="87" r="5"/><circle cx="105" cy="87" r="5"/><circle cx="170" cy="87" r="5"/><circle cx="235" cy="87" r="5"/></g>
+  </g>
+</svg>

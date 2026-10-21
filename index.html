@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    
+    <!-- CORRIGIDO: Nome do app padronizado para Teclado e Pads MIDI -->
+    <title>Teclado e Pads MIDI</title>
+    <meta name="description" content="Teclado e pads MIDI virtuais para aplicativos e dispositivos compatíveis." />
+    
+    <meta property="og:title" content="Teclado e Pads MIDI" />
+    <meta property="og:description" content="Teclado e pads MIDI virtuais para aplicativos e dispositivos compatíveis." />
+    <meta property="og:type" content="website" />
+    
+    <!-- Tema escuro combinando com o topo do app -->
+    <meta name="theme-color" content="#0a0e1a" />
+    
+    <!-- PWA e iOS -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Teclado e Pads MIDI" />
+    
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+  </head>
+  <!-- CORRIGIDO: Removidas as classes do Tailwind do body. O arquivo index.css já cuida do fundo e das cores. -->
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
