@@ -64,17 +64,11 @@ export interface NativeMidiPlugin {
     address?: string;
   }): Promise<NativeMidiConnection>;
 
-  disconnect(options?: {
-    id?: string;
-  }): Promise<void>;
+  disconnect(options?: { id?: string }): Promise<void>;
 
-  disconnectOutput(options?: {
-    id?: string;
-  }): Promise<void>;
+  disconnectOutput(options?: { id?: string }): Promise<void>;
 
-  disconnectInput(options?: {
-    id?: string;
-  }): Promise<void>;
+  disconnectInput(options?: { id?: string }): Promise<void>;
 
   send(options: {
     data: number[];
@@ -87,16 +81,17 @@ export interface NativeMidiPlugin {
     data: number[];
   }): Promise<void>;
 
-  // Funções de BLE corrigidas e adicionadas
-  scanBleDevices(options?: {
+  // BLE — métodos opcionais: a implementação Android pode não expor todos.
+  // O serviço protege as chamadas com optional chaining.
+  scanBleDevices?(options?: {
     durationMs?: number;
   }): Promise<{
     devices: NativeBleDevice[];
   }>;
 
-  stopBleScan(): Promise<void>;
+  stopBleScan?(): Promise<void>;
 
-  connectBleMidi(options: {
+  connectBleMidi?(options: {
     address: string;
     outputPortIndex?: number;
     inputPortIndex?: number;
@@ -107,7 +102,7 @@ export interface NativeMidiPlugin {
     inputConnected: boolean;
   }>;
 
-  scanBluetoothMidi(options?: {
+  scanBluetoothMidi?(options?: {
     durationMs?: number;
   }): Promise<{
     devices: NativeBleDevice[];
