@@ -1,6 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { MidiDestination } from '../types/midi';
-import { ChevronDown, CheckCircle2, Circle, RefreshCw, Usb, Bluetooth, Radio, X } from 'lucide-react';
+import {
+  ChevronDown,
+  CheckCircle2,
+  Circle,
+  RefreshCw,
+  Usb,
+  Bluetooth,
+  Radio,
+  X,
+} from 'lucide-react';
 
 interface DestinationDropdownProps {
   destinations: MidiDestination[];
@@ -24,7 +33,6 @@ export const DestinationDropdown: React.FC<DestinationDropdownProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Fecha ao clicar fora
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
@@ -57,8 +65,8 @@ export const DestinationDropdown: React.FC<DestinationDropdownProps> = ({
     setIsOpen(false);
   };
 
-  // Separa os destinos entre USB/Virtual e BLE com base no tipo
-  const usbDestinations = destinations.filter((dest) => dest.type === 'usb' || dest.type === 'virtual');
+  // Todas as saídas não-BLE (USB, virtual, local, unknown)
+  const usbDestinations = destinations.filter((dest) => dest.type !== 'ble');
   const bleDestinations = destinations.filter((dest) => dest.type === 'ble');
 
   return (
@@ -100,7 +108,7 @@ export const DestinationDropdown: React.FC<DestinationDropdownProps> = ({
       {isOpen && (
         <div
           role="listbox"
-          className="absolute right-0 mt-2 w-[280px] sm:w-[320px] max-h-[75vh] overflow-y-auto bg-[#0f172a] border border-[#1e293b] rounded-xl shadow-2xl z-[100] divide-y divide-[#1e293b] custom-scrollbar"
+          className="absolute left-0 mt-2 w-[280px] sm:w-[320px] max-h-[75vh] overflow-y-auto bg-[#0f172a] border border-[#1e293b] rounded-xl shadow-2xl z-[100] divide-y divide-[#1e293b] custom-scrollbar"
         >
           {/* Cabeçalho */}
           <div className="px-3 py-2 flex items-center justify-between gap-2 bg-[#0a0f1c] rounded-t-xl">
@@ -117,7 +125,7 @@ export const DestinationDropdown: React.FC<DestinationDropdownProps> = ({
             </button>
           </div>
 
-          {/* Opção de Desconectar */}
+          {/* Desconectar */}
           {connectedDestination && (
             <div className="p-2 bg-[#0f172a]">
               <button
@@ -132,14 +140,14 @@ export const DestinationDropdown: React.FC<DestinationDropdownProps> = ({
             </div>
           )}
 
-          {/* SEÇÃO 1: Dispositivos USB / Locais */}
+          {/* USB / Locais / Virtuais */}
           <div className="py-1">
             <div className="px-3 py-1.5 text-[10px] uppercase font-bold text-emerald-400 bg-emerald-950/20 flex items-center gap-1.5">
-              <Usb size={12} /> USB / Locais ({usbDestinations.length})
+              <Usb size={12} /> USB / Locais / Virtuais ({usbDestinations.length})
             </div>
             {usbDestinations.length === 0 ? (
               <div className="px-4 py-2 text-[11px] text-slate-500 italic">
-                Nenhum dispositivo USB.
+                Nenhum dispositivo local detectado.
               </div>
             ) : (
               usbDestinations.map((dest) => {
@@ -158,6 +166,7 @@ export const DestinationDropdown: React.FC<DestinationDropdownProps> = ({
                     <div className="truncate pr-2">
                       <div className="truncate font-semibold flex items-center gap-1.5">
                         {dest.displayName}
+                        <span className="text-[9px] uppercase opacity-60">({dest.type})</span>
                       </div>
                       {dest.manufacturer && (
                         <div className="text-[10px] text-slate-500 truncate mt-0.5">
@@ -176,14 +185,14 @@ export const DestinationDropdown: React.FC<DestinationDropdownProps> = ({
             )}
           </div>
 
-          {/* SEÇÃO 2: Dispositivos Bluetooth BLE */}
+          {/* Bluetooth BLE */}
           <div className="py-1">
             <div className="px-3 py-1.5 text-[10px] uppercase font-bold text-cyan-400 bg-cyan-950/20 flex items-center gap-1.5">
               <Bluetooth size={12} /> Bluetooth BLE ({bleDestinations.length})
             </div>
             {bleDestinations.length === 0 ? (
               <div className="px-4 py-2 text-[11px] text-slate-500 italic">
-                Nenhum dispositivo BLE pareado.
+                Nenhum dispositivo BLE encontrado. Use "Buscar BLE".
               </div>
             ) : (
               bleDestinations.map((dest) => {
@@ -227,8 +236,8 @@ export const DestinationDropdown: React.FC<DestinationDropdownProps> = ({
               onClick={onScanBle}
               disabled={isScanningBle}
               className={`w-full text-left px-3 py-2 text-xs font-bold border rounded-lg flex items-center justify-between transition-colors ${
-                isScanningBle 
-                  ? 'text-slate-400 bg-slate-800 border-slate-700 cursor-wait' 
+                isScanningBle
+                  ? 'text-slate-400 bg-slate-800 border-slate-700 cursor-wait'
                   : 'text-cyan-300 bg-cyan-950/40 hover:bg-cyan-900/60 border-cyan-800/50'
               }`}
             >
