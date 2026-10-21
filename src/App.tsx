@@ -236,4 +236,73 @@ export default function App() {
         ))}
       </nav>
 
-      <main className="flex min-h-0 flex-1 flex-col overflow-hidden px-2 pb-2 sm:px
+      <main className="flex min-h-0 flex-1 flex-col overflow-hidden px-2 pb-2 sm:px-4">
+        {activeTab === 'keyboard' && (
+          <div className="flex min-h-0 flex-1 flex-col">
+            <MidiKeyboard
+              isConnected={isConnected}
+              selectedChannel={selectedChannel}
+              onSelectChannel={setSelectedChannel}
+              onNoteOn={handleNoteOn}
+              onNoteOff={handleNoteOff}
+              onDisabledPress={handleDisabledPress}
+              customWhiteKeyColor="#f8fafc"
+              customBlackKeyColor="#172033"
+              onActiveNotesChange={setActiveNotes}
+              onActivity={() => {}}
+              isActive={isActive}
+              onToggleActive={() => setIsActive((v) => !v)}
+              isSustainActive={isSustainActive}
+              onToggleSustain={() => void toggleSustain()}
+            />
+          </div>
+        )}
+        {activeTab === 'pads' && (
+          <div className="flex min-h-0 flex-1 flex-col">
+            <MidiPadGrid
+              isActive={isActive}
+              onNoteOn={handleNoteOn}
+              onNoteOff={handleNoteOff}
+              onDisabledPress={handleDisabledPress}
+            />
+          </div>
+        )}
+        {activeTab === 'controls' && (
+          <MidiControlsScreen
+            channel={selectedChannel}
+            isConnected={isConnected}
+            onStatus={(msg, type) => showToast(msg, type || 'info')}
+          />
+        )}
+        {activeTab === 'hub' && (
+          <MidiHubScreen
+            destinations={destinations}
+            connectedDestination={connectedDestination}
+            onConnect={connectDestination}
+            onDisconnect={disconnectDestination}
+            onRefresh={refreshDestinations}
+          />
+        )}
+        {activeTab === 'router' && (
+          <MidiRouterScreen destinations={destinations} onRefresh={refreshDestinations} />
+        )}
+        {activeTab === 'monitor' && <MidiMonitorScreen />}
+      </main>
+
+      {toast && (
+        <button
+          type="button"
+          onClick={() => setToast(null)}
+          className={`absolute left-3 right-3 top-16 z-50 rounded-xl border px-4 py-3 text-left text-xs shadow-2xl ${
+            toast.type === 'error' ? 'border-rose-800/60 bg-rose-950/95 text-rose-200'
+              : toast.type === 'warn' ? 'border-amber-800/60 bg-amber-950/95 text-amber-200'
+              : toast.type === 'success' ? 'border-emerald-800/60 bg-emerald-950/95 text-emerald-200'
+              : 'border-slate-700 bg-slate-900/95 text-slate-200'
+          }`}
+        >
+          {toast.message} <span className="ml-2 opacity-70">×</span>
+        </button>
+      )}
+    </div>
+  );
+}
