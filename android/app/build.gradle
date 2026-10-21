@@ -4,7 +4,7 @@ android {
     namespace = "com.midi.controller.keyboard"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.midi.controller.keyboard"
+        applicationId "com.rodolpho.tecladoepads.midi"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

@@ -2,6 +2,6 @@
 <resources>
     <string name="app_name">Teclado e Pads MIDI</string>
     <string name="title_activity_main">Teclado e Pads MIDI</string>
-    <string name="package_name">com.midi.controller.keyboard</string>
-    <string name="custom_url_scheme">com.midi.controller.keyboard</string>
+    <string name="package_name">com.rodolpho.tecladoepads.midi</string>
+    <string name="custom_url_scheme">com.rodolpho.tecladoepads.midi</string>
 </resources>
