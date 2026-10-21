@@ -11,18 +11,15 @@ export function MidiMonitorScreen({ maxEntries = 150 }: Props) {
   const [entries, setEntries] = useState<MidiLogEntry[]>([]);
   const [paused, setPaused] = useState(false);
   const [filter, setFilter] = useState<'all' | 'RX' | 'TX'>('all');
-  
+
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const filterRef = useRef<HTMLDivElement>(null);
-  
-  // Ref para evitar recriar o listener a cada pausa
   const pausedRef = useRef(paused);
 
   useEffect(() => {
     pausedRef.current = paused;
   }, [paused]);
 
-  // Fecha o menu customizado ao clicar fora
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (filterRef.current && !filterRef.current.contains(event.target as Node)) {
@@ -39,9 +36,9 @@ export function MidiMonitorScreen({ maxEntries = 150 }: Props) {
       data1: number;
       data2: number;
       timestamp: number;
+      direction?: 'RX' | 'TX';
       sourceId?: string;
     }) => {
-      // CORREÇÃO DE PERFORMANCE: Usa a ref em vez do estado direto, evitando recriar o listener
       if (pausedRef.current) return;
 
       const status = message.status & 0xff;
@@ -66,6 +63,8 @@ export function MidiMonitorScreen({ maxEntries = 150 }: Props) {
         .map((value) => (value & 0xff).toString(16).padStart(2, '0'))
         .join(' ');
 
+      const direction: 'RX' | 'TX' = message.direction === 'TX' ? 'TX' : 'RX';
+
       const entry: MidiLogEntry = {
         id: `${message.timestamp}-${Math.random().toString(36).slice(2, 8)}`,
         timestamp: new Date(message.timestamp).toLocaleTimeString(),
@@ -75,7 +74,7 @@ export function MidiMonitorScreen({ maxEntries = 150 }: Props) {
         noteName: getNoteName(message.data1),
         velocity: message.data2,
         bytesHex,
-        direction: 'RX', // Nota: Se o midiManager enviar TX por aqui também, isso precisaria ser dinâmico
+        direction,
         source: message.sourceId,
       };
 
@@ -87,7 +86,7 @@ export function MidiMonitorScreen({ maxEntries = 150 }: Props) {
     return () => {
       midiManager.removeMessageListener(listener);
     };
-  }, [maxEntries]); // Removido 'paused' das dependências
+  }, [maxEntries]);
 
   const visible =
     filter === 'all'
@@ -96,7 +95,7 @@ export function MidiMonitorScreen({ maxEntries = 150 }: Props) {
 
   return (
     <div className="flex-1 min-h-0 flex flex-col bg-[#0a0f1c] text-slate-100 rounded-xl border border-slate-800 overflow-hidden">
-      
+
       {/* CABEÇALHO */}
       <div className="px-4 py-3 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
         <div>
@@ -104,12 +103,12 @@ export function MidiMonitorScreen({ maxEntries = 150 }: Props) {
             MIDI Monitor
           </h2>
           <p className="text-[10px] text-slate-500">
-            Mensagens MIDI recebidas pelo NexusMIDI.
+            Mensagens MIDI de entrada (RX) e saída (TX).
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          
+
           {/* FILTRO CUSTOMIZADO */}
           <div className="relative" ref={filterRef}>
             <button
@@ -132,7 +131,10 @@ export function MidiMonitorScreen({ maxEntries = 150 }: Props) {
                 ].map((item) => (
                   <button
                     key={item.id}
-                    onClick={() => { setFilter(item.id as typeof filter); setIsFilterOpen(false); }}
+                    onClick={() => {
+                      setFilter(item.id as typeof filter);
+                      setIsFilterOpen(false);
+                    }}
                     className={`w-full text-left px-3 py-2 text-xs transition hover:bg-slate-800 ${
                       filter === item.id ? 'bg-slate-800/50 text-cyan-400 font-bold' : 'text-slate-300'
                     }`}
@@ -149,8 +151,8 @@ export function MidiMonitorScreen({ maxEntries = 150 }: Props) {
             type="button"
             onClick={() => setPaused((value) => !value)}
             className={`flex h-[30px] items-center gap-1.5 px-2.5 rounded-md text-xs border transition-colors ${
-              paused 
-                ? 'border-amber-600/50 bg-amber-900/30 text-amber-400' 
+              paused
+                ? 'border-amber-600/50 bg-amber-900/30 text-amber-400'
                 : 'border-slate-700 bg-[#0f172a] text-slate-300 hover:bg-slate-800'
             }`}
           >
@@ -170,11 +172,11 @@ export function MidiMonitorScreen({ maxEntries = 150 }: Props) {
         </div>
       </div>
 
-      {/* ÁREA DA LISTA COM ROLAGEM HORIZONTAL (Protege o layout no celular) */}
+      {/* ÁREA DA LISTA COM ROLAGEM HORIZONTAL */}
       <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
         <div className="flex-1 min-h-0 overflow-x-auto overflow-y-auto custom-scrollbar">
           <div className="min-w-[580px] flex flex-col h-full">
-            
+
             {/* CABEÇALHO DA TABELA */}
             <div className="grid grid-cols-[70px_40px_110px_1fr_40px_90px] gap-2 px-3 py-2 text-[9px] uppercase tracking-wide text-slate-500 border-b border-slate-800 shrink-0 bg-[#0a0f1c] sticky top-0 z-10">
               <span>Hora</span>
@@ -191,7 +193,7 @@ export function MidiMonitorScreen({ maxEntries = 150 }: Props) {
                 <div className="h-full min-h-[200px] flex items-center justify-center text-xs text-slate-600">
                   {paused
                     ? 'Monitoramento pausado.'
-                    : 'Aguardando mensagens MIDI recebidas...'}
+                    : 'Aguardando mensagens MIDI...'}
                 </div>
               ) : (
                 visible.map((entry) => (
@@ -215,7 +217,7 @@ export function MidiMonitorScreen({ maxEntries = 150 }: Props) {
                 ))
               )}
             </div>
-            
+
           </div>
         </div>
       </div>
