@@ -12,11 +12,6 @@ type Toast = { message: string; type: 'info' | 'warn' | 'error' | 'success' };
 
 const VELOCITIES = [30, 64, 100, 127];
 
-const TABS: { id: AppTab; label: string; Icon: React.ComponentType<{ size?: number }> }[] = [
-  { id: 'keyboard', label: 'Teclado', Icon: Music2 },
-  { id: 'pads',     label: 'Pads',    Icon: LayoutGrid },
-];
-
 export default function App() {
   const [activeTab, setActiveTab] = useState<AppTab>('keyboard');
   const [selectedChannel, setSelectedChannel] = useState(1);
@@ -168,7 +163,8 @@ export default function App() {
         </div>
       </header>
 
-      <section className="mx-3 mb-2 grid shrink-0 grid-cols-[minmax(0,1fr)_auto_auto] gap-2 rounded-xl border border-white/10 bg-slate-900/80 p-2 sm:mx-5 sm:gap-3">
+      {/* PAINEL SUPERIOR INTEGRADO */}
+      <section className="mx-3 mb-2 grid shrink-0 grid-cols-1 md:grid-cols-[1fr_auto_auto] items-end gap-2 rounded-xl border border-white/10 bg-slate-900/80 p-2 sm:mx-5 sm:gap-3">
         <label className="flex min-w-0 flex-col gap-1">
           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Saída MIDI</span>
           <DestinationDropdown
@@ -181,51 +177,64 @@ export default function App() {
             isScanningBle={isScanningBle}
           />
         </label>
-        <label className="flex flex-col gap-1">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Vel.</span>
-          <select
-            value={selectedVelocity}
-            onChange={(e) => setSelectedVelocity(Number(e.target.value))}
-            className="h-9 rounded-lg border border-slate-700 bg-slate-950 px-2 text-xs text-slate-100 outline-none focus:border-cyan-400"
-          >
-            {VELOCITIES.map((v) => (
-              <option key={v} value={v}>
-                {v} {v === 30 ? 'Suave' : v === 64 ? 'Média' : v === 100 ? 'Forte' : 'Máx'}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="flex flex-col gap-1">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">CH</span>
-          <select
-            value={selectedChannel}
-            onChange={(e) => setSelectedChannel(Number(e.target.value))}
-            className="h-9 rounded-lg border border-slate-700 bg-slate-950 px-2 text-xs text-slate-100 outline-none focus:border-cyan-400"
-          >
-            {Array.from({ length: 16 }, (_, i) => i + 1).map((ch) => (
-              <option key={ch} value={ch}>{String(ch).padStart(2, '0')}</option>
-            ))}
-          </select>
-        </label>
-      </section>
 
-      <nav className="mx-3 mb-2 grid shrink-0 grid-cols-2 gap-2 sm:mx-5" aria-label="Instrumentos">
-        {TABS.map(({ id, label, Icon }) => (
-          <button
-            key={id}
-            type="button"
-            onClick={() => setActiveTab(id)}
-            className={`flex h-11 items-center justify-center gap-2 rounded-xl border text-sm font-bold transition ${
-              activeTab === id
-                ? 'border-cyan-400/60 bg-cyan-400/15 text-cyan-200'
-                : 'border-white/10 bg-slate-900/70 text-slate-400'
-            }`}
-          >
-            <Icon size={18} />
-            <span>{label}</span>
-          </button>
-        ))}
-      </nav>
+        {/* BOTÕES TECLADO E PADS NO MEIO */}
+        <div className="flex flex-col gap-1 w-full md:w-auto">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 hidden md:block text-center">Modo</span>
+          <div className="flex h-9 items-center rounded-lg border border-slate-700 bg-slate-950 p-0.5 w-full md:w-auto">
+            <button
+              type="button"
+              onClick={() => setActiveTab('keyboard')}
+              className={`flex flex-1 md:flex-none items-center justify-center gap-1.5 rounded-md px-4 py-1.5 text-xs font-bold transition ${
+                activeTab === 'keyboard' ? 'bg-cyan-700 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <Music2 size={14} />
+              <span>Teclado</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('pads')}
+              className={`flex flex-1 md:flex-none items-center justify-center gap-1.5 rounded-md px-4 py-1.5 text-xs font-bold transition ${
+                activeTab === 'pads' ? 'bg-cyan-700 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <LayoutGrid size={14} />
+              <span>Pads</span>
+            </button>
+          </div>
+        </div>
+
+        {/* VELOCIDADE E CANAL */}
+        <div className="flex gap-2 w-full md:w-auto">
+          <label className="flex flex-1 md:flex-none flex-col gap-1">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 text-center">Vel.</span>
+            <select
+              value={selectedVelocity}
+              onChange={(e) => setSelectedVelocity(Number(e.target.value))}
+              className="h-9 w-full md:w-[100px] rounded-lg border border-slate-700 bg-slate-950 px-2 text-xs text-slate-100 outline-none focus:border-cyan-400"
+            >
+              {VELOCITIES.map((v) => (
+                <option key={v} value={v}>
+                  {v} {v === 30 ? 'Suave' : v === 64 ? 'Média' : v === 100 ? 'Forte' : 'Máx'}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="flex flex-1 md:flex-none flex-col gap-1">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 text-center">CH</span>
+            <select
+              value={selectedChannel}
+              onChange={(e) => setSelectedChannel(Number(e.target.value))}
+              className="h-9 w-full md:w-[70px] rounded-lg border border-slate-700 bg-slate-950 px-2 text-xs text-slate-100 outline-none focus:border-cyan-400"
+            >
+              {Array.from({ length: 16 }, (_, i) => i + 1).map((ch) => (
+                <option key={ch} value={ch}>{String(ch).padStart(2, '0')}</option>
+              ))}
+            </select>
+          </label>
+        </div>
+      </section>
 
       <main className="flex min-h-0 flex-1 flex-col overflow-hidden px-2 pb-2 sm:px-4">
         {activeTab === 'keyboard' && (
