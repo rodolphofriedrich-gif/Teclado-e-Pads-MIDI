@@ -1,17 +1,13 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Music2, LayoutGrid, SlidersHorizontal, Network, ArrowRightLeft, Monitor, Volume2 } from 'lucide-react';
+import { Music2, LayoutGrid, Volume2 } from 'lucide-react';
 import { MidiDestination } from './types/midi';
 import { midiManager } from './services/midiService';
 import { MidiKeyboard } from './components/MidiKeyboard';
 import { MidiPadGrid } from './components/MidiPadGrid';
 import { DestinationDropdown } from './components/DestinationDropdown';
 import { PWAInstallButton } from './components/PWAInstallButton';
-import { MidiControlsScreen } from './components/MidiControlsScreen';
-import { MidiHubScreen } from './components/MidiHubScreen';
-import { MidiRouterScreen } from './components/MidiRouterScreen';
-import { MidiMonitorScreen } from './components/MidiMonitorScreen';
 
-type AppTab = 'keyboard' | 'pads' | 'controls' | 'hub' | 'router' | 'monitor';
+type AppTab = 'keyboard' | 'pads';
 type Toast = { message: string; type: 'info' | 'warn' | 'error' | 'success' };
 
 const VELOCITIES = [30, 64, 100, 127];
@@ -19,10 +15,6 @@ const VELOCITIES = [30, 64, 100, 127];
 const TABS: { id: AppTab; label: string; Icon: React.ComponentType<{ size?: number }> }[] = [
   { id: 'keyboard', label: 'Teclado', Icon: Music2 },
   { id: 'pads',     label: 'Pads',    Icon: LayoutGrid },
-  { id: 'controls', label: 'Ctrl',    Icon: SlidersHorizontal },
-  { id: 'hub',      label: 'Hub',     Icon: Network },
-  { id: 'router',   label: 'Router',  Icon: ArrowRightLeft },
-  { id: 'monitor',  label: 'Mon',     Icon: Monitor },
 ];
 
 export default function App() {
@@ -62,7 +54,6 @@ export default function App() {
 
   const refreshDestinations = useCallback(async () => {
     const all = await midiManager.getAvailableDestinations();
-    // virtual-main é fonte interna, não destino físico — remove da lista de saída
     const available = all.filter((d) => d.id !== 'virtual-main');
     setDestinations(available);
     const connected = midiManager.getConnectedDestination();
@@ -218,19 +209,19 @@ export default function App() {
         </label>
       </section>
 
-      <nav className="mx-3 mb-2 grid shrink-0 grid-cols-6 gap-1 sm:mx-5 sm:gap-2" aria-label="Navegação">
+      <nav className="mx-3 mb-2 grid shrink-0 grid-cols-2 gap-2 sm:mx-5" aria-label="Instrumentos">
         {TABS.map(({ id, label, Icon }) => (
           <button
             key={id}
             type="button"
             onClick={() => setActiveTab(id)}
-            className={`flex h-11 flex-col items-center justify-center gap-0.5 rounded-xl border text-[9px] font-bold transition sm:text-[10px] ${
+            className={`flex h-11 items-center justify-center gap-2 rounded-xl border text-sm font-bold transition ${
               activeTab === id
                 ? 'border-cyan-400/60 bg-cyan-400/15 text-cyan-200'
                 : 'border-white/10 bg-slate-900/70 text-slate-400'
             }`}
           >
-            <Icon size={16} />
+            <Icon size={18} />
             <span>{label}</span>
           </button>
         ))}
@@ -267,26 +258,18 @@ export default function App() {
             />
           </div>
         )}
-        {activeTab === 'controls' && (
-          <MidiControlsScreen
-            channel={selectedChannel}
-            isConnected={isConnected}
-            onStatus={(msg, type) => showToast(msg, type || 'info')}
-          />
-        )}
-        {activeTab === 'hub' && (
-          <MidiHubScreen
-            destinations={destinations}
-            connectedDestination={connectedDestination}
-            onConnect={connectDestination}
-            onDisconnect={disconnectDestination}
-            onRefresh={refreshDestinations}
-          />
-        )}
-        {activeTab === 'router' && (
-          <MidiRouterScreen destinations={destinations} onRefresh={refreshDestinations} />
-        )}
-        {activeTab === 'monitor' && <MidiMonitorScreen />}
+
+        <div className="mt-2 flex shrink-0 items-center justify-between gap-2 rounded-lg border border-white/10 bg-slate-950/80 px-3 py-2">
+          <div className="flex min-w-0 items-center gap-2">
+            <span className={`h-2 w-2 shrink-0 rounded-full ${isConnected ? 'bg-emerald-400' : 'bg-amber-400'}`} />
+            <span className="truncate text-[11px] text-slate-300">
+              {isConnected ? `Conectado: ${connectedDestination?.displayName}` : 'Sem conexão MIDI'}
+            </span>
+          </div>
+          <div className="flex shrink-0 items-center gap-1 text-[10px] text-slate-500">
+            <Volume2 size={13} /> {activeNotes} ativa(s)
+          </div>
+        </div>
       </main>
 
       {toast && (
