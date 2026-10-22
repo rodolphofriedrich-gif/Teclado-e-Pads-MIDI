@@ -100,15 +100,12 @@ export function MidiPadGrid({ isActive, onNoteOn, onNoteOff, onDisabledPress, on
     <div className="flex flex-col w-full h-full bg-[#0a0f1c] rounded-xl border border-[#1e293b] overflow-hidden">
       <div className="flex items-center justify-between bg-[#0f172a] border-b border-[#1e293b] px-3 py-2 shrink-0">
         <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">Pads MIDI</span>
-        <span className="text-[10px] text-slate-500">16 notas · toque para disparar</span>
+        <span className="text-[10px] text-slate-500 hidden sm:inline">16 notas · toque para disparar</span>
       </div>
 
-      {/* 
-        CORREÇÃO VISUAL: Adicionado "aspect-square" nos itens e um container flex para 
-        garantir que os pads fiquem quadrados e as legendas não sumam.
-      */}
-      <div className="flex-1 w-full min-h-0 p-2 flex items-center justify-center">
-        <div className="grid grid-cols-4 grid-rows-4 gap-1.5 sm:gap-2 w-full max-w-full max-h-full aspect-square">
+      {/* CONTAINER QUE GARANTE PADS QUADRADOS */}
+      <div className="flex-1 w-full min-h-0 p-2 flex items-center justify-center overflow-hidden">
+        <div className="grid grid-cols-4 grid-rows-4 gap-1.5 sm:gap-2 w-full max-w-[min(100%,_100vh)] aspect-square">
           {ALL_PADS.map((pad) => {
             const isPressed = pressedPads.has(pad.id);
             const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -139,8 +136,8 @@ export function MidiPadGrid({ isActive, onNoteOn, onNoteOff, onDisabledPress, on
                 style={{ touchAction: 'none' }}
               >
                 <div className={`absolute inset-0 opacity-10 ${pad.color} ${isPressed ? 'opacity-50' : ''} transition-opacity`} />
-                <div className="flex flex-col items-center justify-center h-full w-full p-1 z-10">
-                  <span className={`text-[10px] sm:text-xs font-extrabold text-center leading-tight drop-shadow-md truncate w-full ${isPressed ? 'text-white' : 'text-slate-200'}`}>
+                <div className="flex flex-col items-center justify-center h-full w-full p-0.5 z-10">
+                  <span className={`text-[10px] sm:text-xs font-extrabold text-center leading-tight drop-shadow-md truncate w-full px-1 ${isPressed ? 'text-white' : 'text-slate-200'}`}>
                     {pad.label}
                   </span>
                   <span className={`text-[9px] font-mono mt-0.5 font-bold ${isPressed ? 'text-white/80' : 'text-slate-500'}`}>
