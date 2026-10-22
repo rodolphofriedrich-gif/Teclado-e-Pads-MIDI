@@ -103,9 +103,9 @@ export function MidiPadGrid({ isActive, onNoteOn, onNoteOff, onDisabledPress, on
         <span className="text-[10px] text-slate-500 hidden sm:inline">16 notas · toque para disparar</span>
       </div>
 
-      {/* CONTAINER QUE GARANTE PADS QUADRADOS */}
-      <div className="flex-1 w-full min-h-0 p-2 flex items-center justify-center overflow-hidden">
-        <div className="grid grid-cols-4 grid-rows-4 gap-1.5 sm:gap-2 w-full max-w-[min(100%,_100vh)] aspect-square">
+      {/* O container do grid precisa de min-h-0 para não estourar o flex-pai */}
+      <div className="flex-1 min-h-0 w-full p-2 flex items-center justify-center">
+        <div className="grid grid-cols-4 grid-rows-4 gap-1.5 sm:gap-2 w-full h-full max-w-[900px] max-h-full min-h-0">
           {ALL_PADS.map((pad) => {
             const isPressed = pressedPads.has(pad.id);
             const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -137,7 +137,7 @@ export function MidiPadGrid({ isActive, onNoteOn, onNoteOff, onDisabledPress, on
               >
                 <div className={`absolute inset-0 opacity-10 ${pad.color} ${isPressed ? 'opacity-50' : ''} transition-opacity`} />
                 <div className="flex flex-col items-center justify-center h-full w-full p-0.5 z-10">
-                  <span className={`text-[10px] sm:text-xs font-extrabold text-center leading-tight drop-shadow-md truncate w-full px-1 ${isPressed ? 'text-white' : 'text-slate-200'}`}>
+                  <span className={`text-[10px] sm:text-sm font-extrabold text-center leading-tight drop-shadow-md truncate w-full px-1 ${isPressed ? 'text-white' : 'text-slate-200'}`}>
                     {pad.label}
                   </span>
                   <span className={`text-[9px] font-mono mt-0.5 font-bold ${isPressed ? 'text-white/80' : 'text-slate-500'}`}>
