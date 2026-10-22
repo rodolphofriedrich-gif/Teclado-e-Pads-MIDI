@@ -70,17 +70,14 @@ export const DestinationDropdown: React.FC<DestinationDropdownProps> = ({
   const bleDestinations = destinations.filter((dest) => dest.type === 'ble');
 
   return (
-    <div
-      className={`relative inline-block text-left ${isOpen ? 'z-[100]' : 'z-20'}`}
-      ref={containerRef}
-    >
+   <div className={`relative w-full text-left ${isOpen ? 'z-[100]' : 'z-20'}`} ref={containerRef}>
       {/* Botão Principal */}
       <button
         type="button"
         onClick={handleToggle}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
-        className={`flex items-center justify-between gap-2.5 px-3 py-2 min-w-[160px] sm:min-w-[200px] max-w-[260px] sm:max-w-[340px] rounded-lg border text-left shadow-sm transition-all focus:outline-none focus:ring-2 ${
+        className={`flex w-full items-center justify-between gap-2.5 px-3 py-2 min-h-[36px] rounded-lg border text-left shadow-sm transition-all focus:outline-none focus:ring-2 ${
           connectedDestination
             ? 'bg-emerald-950/40 hover:bg-emerald-900/50 border-emerald-700/60 text-emerald-300 focus:ring-emerald-500/50'
             : 'bg-[#0f172a] hover:bg-slate-800 border-slate-700 text-slate-300 focus:ring-slate-500/50'
