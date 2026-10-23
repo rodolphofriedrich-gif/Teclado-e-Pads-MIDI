@@ -14,6 +14,8 @@ interface MidiKeyboardProps {
   isConnected: boolean;
   selectedChannel: number;
   onSelectChannel: (channel: number) => void;
+  selectedVelocity: number;
+  onSelectVelocity: (velocity: number) => void;
   onNoteOn: (note: number) => void;
   onNoteOff: (note: number) => void;
   onDisabledPress: () => void;
@@ -45,11 +47,14 @@ const OCTAVE_NOTES = [
 const TOTAL_WHITE_KEYS = 14;
 const MIN_KEY_WIDTH = 35;
 const MAX_KEY_WIDTH = 95;
+const VELOCITIES = [30, 64, 100, 127];
 
 export function MidiKeyboard({
   isConnected,
   selectedChannel,
   onSelectChannel,
+  selectedVelocity,
+  onSelectVelocity,
   onNoteOn,
   onNoteOff,
   onDisabledPress,
@@ -376,7 +381,25 @@ export function MidiKeyboard({
           </div>
         </div>
 
-        {/* Seletor de Canal e Menu de Configurações */}
+        {/* NOVO: SELETOR DE VELOCITY NO MEIO */}
+        <div className="flex flex-1 justify-center px-2">
+          <label className="flex items-center gap-2 text-[10px] font-bold uppercase text-slate-400">
+            <span>Velocity</span>
+            <select
+              value={selectedVelocity}
+              onChange={(e) => onSelectVelocity(Number(e.target.value))}
+              className="h-8 rounded-lg border border-slate-700 bg-[#0f172a] px-2 text-xs text-slate-200 outline-none"
+            >
+              {VELOCITIES.map((v) => (
+                <option key={v} value={v}>
+                  {v} {v === 30 ? 'Suave' : v === 64 ? 'Média' : v === 100 ? 'Forte' : 'Máx'}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+
+        {/* CANAL E CONFIGURAÇÕES À DIREITA */}
         <div className="flex items-center gap-2" ref={settingsRef}>
           <div className="relative" ref={channelDropdownRef}>
             <button
