@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Music2, LayoutGrid, Volume2 } from 'lucide-react';
+import { Music2, LayoutGrid, Volume2, LogOut } from 'lucide-react';
 import { MidiDestination } from './types/midi';
 import { midiManager } from './services/midiService';
 import { MidiKeyboard } from './components/MidiKeyboard';
@@ -138,12 +138,23 @@ export default function App() {
     }
   };
 
+  const handleExit = () => {
+    if (window.confirm('Deseja realmente fechar o aplicativo?')) {
+      // Tenta usar o método nativo do Capacitor, se disponível
+      const nativeMidi = (window as any).Capacitor?.Plugins?.NativeMidi;
+      if (nativeMidi && typeof nativeMidi.fecharApp === 'function') {
+        nativeMidi.fecharApp().catch(console.error);
+      } else {
+        window.close(); // Fallback para navegador
+      }
+    }
+  };
+
   const isConnected = Boolean(connectedDestination);
 
   return (
-    <div className="nexus-app fixed inset-0 flex h-screen w-full flex-col overflow-hidden font-sans antialiased select-none bg-[#05080f]">
+    <div className="nexus-app fixed inset-0 flex h-screen w-full flex-col overflow-hidden font-sans antialiased select-none bg-black">
       
-      {/* CABEÇALHO INTEGRADO */}
       <header className="nexus-header z-30 flex min-h-[60px] shrink-0 items-center justify-between gap-2 px-3 sm:px-5 border-b border-white/5 bg-[#0a0f1c]">
         <div className="flex min-w-0 items-center gap-3 shrink-0">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-cyan-400/25 bg-cyan-400/10 text-cyan-300">
@@ -154,7 +165,6 @@ export default function App() {
           </div>
         </div>
 
-        {/* ABAS NO CENTRO */}
         <div className="flex flex-1 justify-center overflow-x-auto px-2 hide-scrollbar">
           <div className="flex h-10 items-center rounded-xl border border-slate-700/50 bg-[#0f172a] p-1">
             <button
@@ -165,7 +175,7 @@ export default function App() {
               }`}
             >
               <Music2 size={16} />
-              <span>Teclado</span>
+              <span className="hidden sm:inline">Teclado</span>
             </button>
             <button
               type="button"
@@ -175,14 +185,13 @@ export default function App() {
               }`}
             >
               <LayoutGrid size={16} />
-              <span>Pads</span>
+              <span className="hidden sm:inline">Pads</span>
             </button>
           </div>
         </div>
 
-        {/* DIREITA: DROPDOWN DE SAÍDA E STATUS */}
         <div className="flex items-center gap-2 shrink-0">
-          <div className="hidden sm:block w-[220px] lg:w-[280px]">
+          <div className="hidden sm:block w-[200px] lg:w-[280px]">
             <DestinationDropdown
               destinations={destinations}
               connectedDestination={connectedDestination}
@@ -193,16 +202,17 @@ export default function App() {
               isScanningBle={isScanningBle}
             />
           </div>
-          <div className="flex items-center gap-1.5 rounded-full border border-slate-700 bg-slate-900/60 px-3 py-2">
-            <span className={`h-2.5 w-2.5 rounded-full ${isConnected ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,.6)]' : 'bg-amber-400'}`} />
-            <span className="hidden lg:inline max-w-[120px] truncate text-[11px] font-semibold text-slate-300">
-              {isConnected ? connectedDestination?.displayName : 'Sem saída'}
-            </span>
-          </div>
+          
+          <button
+            onClick={handleExit}
+            title="Sair do aplicativo"
+            className="flex h-[38px] w-[38px] items-center justify-center rounded-full border border-rose-900/50 bg-rose-950/30 text-rose-400 hover:bg-rose-900/50 hover:text-rose-300 transition-colors"
+          >
+            <LogOut size={18} />
+          </button>
         </div>
       </header>
 
-      {/* CONTEÚDO PRINCIPAL */}
       <main className="flex min-h-0 flex-1 flex-col overflow-hidden p-2 sm:p-3">
         {activeTab === 'keyboard' && (
           <div className="flex min-h-0 flex-1 flex-col">
@@ -242,7 +252,6 @@ export default function App() {
           </div>
         )}
 
-        {/* RODAPÉ DE STATUS */}
         <div className="mt-2 flex shrink-0 items-center justify-between gap-2 rounded-lg border border-white/10 bg-[#0a0f1c] px-3 py-2">
           <div className="flex min-w-0 items-center gap-2">
             <span className={`h-2 w-2 shrink-0 rounded-full ${isConnected ? 'bg-emerald-400' : 'bg-amber-400'}`} />
