@@ -67,19 +67,22 @@ export function MidiKeyboard({
   isSustainActive,
   onToggleSustain,
 }: MidiKeyboardProps) {
-  const [startOctave, setStartOctave] = useState(3);
-  const [keyWidth, setKeyWidth] = useState(60);
+  
+  // PERSISTÊNCIA: Lendo do localStorage ao invés de iniciar do zero
+  const [startOctave, setStartOctave] = useState(() => Number(localStorage.getItem('nexus_key_octave')) || 3);
+  const [keyWidth, setKeyWidth] = useState(() => Number(localStorage.getItem('nexus_key_width')) || 60);
+  const [isScrollLocked, setIsScrollLocked] = useState(() => localStorage.getItem('nexus_key_scroll') === 'true');
+  
   const [minKeyWidth, setMinKeyWidth] = useState(MIN_KEY_WIDTH);
-  const [isScrollLocked, setIsScrollLocked] = useState(false);
   const [pressedNotes, setPressedNotes] = useState<Set<number>>(() => new Set());
 
   const [isChannelOpen, setIsChannelOpen] = useState(false);
-  const [isVelocityOpen, setIsVelocityOpen] = useState(false); // NOVO
+  const [isVelocityOpen, setIsVelocityOpen] = useState(false);
   const [isQuickSettingsOpen, setIsQuickSettingsOpen] = useState(false);
 
   const settingsRef = useRef<HTMLDivElement>(null);
   const channelDropdownRef = useRef<HTMLDivElement>(null);
-  const velocityDropdownRef = useRef<HTMLDivElement>(null); // NOVO
+  const velocityDropdownRef = useRef<HTMLDivElement>(null);
   const scrollViewportRef = useRef<HTMLDivElement>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -88,6 +91,13 @@ export function MidiKeyboard({
 
   const onNoteOffRef = useRef(onNoteOff);
   const onDisabledPressRef = useRef(onDisabledPress);
+
+  // PERSISTÊNCIA: Salvando no localStorage sempre que mudar
+  useEffect(() => {
+    localStorage.setItem('nexus_key_octave', String(startOctave));
+    localStorage.setItem('nexus_key_width', String(keyWidth));
+    localStorage.setItem('nexus_key_scroll', String(isScrollLocked));
+  }, [startOctave, keyWidth, isScrollLocked]);
 
   useEffect(() => {
     if (onActiveNotesChange) onActiveNotesChange(pressedNotes.size);
@@ -401,7 +411,7 @@ export function MidiKeyboard({
               <ChevronDown size={12} />
             </button>
             {isVelocityOpen && (
-              <div className="absolute top-full right-1/2 translate-x-1/2 z-[999] mt-2 w-32 overflow-y-auto rounded-xl border border-slate-700 bg-[#0f172a] shadow-2xl custom-scrollbar">
+              <div className="absolute top-full right-1/2 translate-x-1/2 z-[999] mt-2 w-28 overflow-y-auto rounded-xl border border-slate-700 bg-[#0f172a] shadow-2xl custom-scrollbar">
                 <div className="flex flex-col gap-0.5 p-1">
                   {VELOCITIES.map((v) => (
                     <button
@@ -411,13 +421,13 @@ export function MidiKeyboard({
                         onSelectVelocity(v);
                         setIsVelocityOpen(false);
                       }}
-                      className={`justify-center py-1.5 text-xs rounded transition-colors ${
+                      className={`justify-center py-1.5 text-[11px] rounded transition-colors ${
                         selectedVelocity === v
                           ? 'bg-cyan-900/50 text-cyan-300 font-bold'
                           : 'text-slate-300 hover:bg-slate-800'
                       }`}
                     >
-                      {v} {v === 30 ? 'Suave' : v === 64 ? 'Média' : v === 100 ? 'Forte' : 'Máx'}
+                      {v} {v === 30 ? 'Suave' : v === 64 ? 'Méd' : v === 100 ? 'Forte' : 'Máx'}
                     </button>
                   ))}
                 </div>
