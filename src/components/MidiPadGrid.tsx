@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { ChevronDown } from 'lucide-react';
 
 interface MidiPadGridProps {
   isActive: boolean;
@@ -42,8 +43,27 @@ export function MidiPadGrid({
   const activePointersRef = useRef<Map<number, number>>(new Map());
   const activeNotesRef = useRef<Set<number>>(new Set());
 
+  // Estados dos Dropdowns customizados
+  const [isVelocityOpen, setIsVelocityOpen] = useState(false);
+  const [isChannelOpen, setIsChannelOpen] = useState(false);
+  const velocityRef = useRef<HTMLDivElement>(null);
+  const channelRef = useRef<HTMLDivElement>(null);
+
   const onNoteOffRef = useRef(onNoteOff);
   useEffect(() => { onNoteOffRef.current = onNoteOff; }, [onNoteOff]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (velocityRef.current && !velocityRef.current.contains(event.target as Node)) {
+        setIsVelocityOpen(false);
+      }
+      if (channelRef.current && !channelRef.current.contains(event.target as Node)) {
+        setIsChannelOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Pega os 8 pads do preset atual
   const visiblePads = activePreset === 1 ? ALL_PADS.slice(0, 8) : ALL_PADS.slice(8, 16);
@@ -112,7 +132,6 @@ export function MidiPadGrid({
   return (
     <div className="flex flex-col w-full h-full bg-[#0a0f1c] rounded-xl border border-[#1e293b] overflow-hidden">
       
-      {/* BARRA SUPERIOR DE CONTROLE E PRESETS */}
       <div className="flex flex-wrap sm:flex-nowrap items-center justify-between gap-2 bg-[#0f172a] border-b border-[#1e293b] px-3 py-2 shrink-0">
         <div className="flex items-center gap-1 sm:gap-2">
           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest hidden sm:block mr-1">PADS</span>
@@ -131,35 +150,60 @@ export function MidiPadGrid({
         </div>
 
         <div className="flex items-center gap-3">
-          <label className="flex items-center gap-1 text-[10px] text-slate-400">
-            <span className="font-bold uppercase hidden sm:block">Vel.</span>
-            <select
-              value={selectedVelocity}
-              onChange={(e) => onSelectVelocity(Number(e.target.value))}
-              className="h-7 rounded bg-[#0a0f1c] border border-slate-700 px-1.5 text-[11px] text-slate-200 outline-none"
+          {/* DROPDOWN CUSTOMIZADO DE VELOCITY */}
+          <div ref={velocityRef} className="relative">
+            <button
+              type="button"
+              onClick={() => setIsVelocityOpen(!isVelocityOpen)}
+              className="flex h-7 items-center gap-1.5 rounded bg-[#0a0f1c] border border-slate-700 px-2 text-[11px] text-slate-200 outline-none hover:bg-slate-800"
             >
-              {VELOCITIES.map((v) => (
-                <option key={v} value={v}>{v}</option>
-              ))}
-            </select>
-          </label>
+              <span className="text-[10px] font-bold uppercase hidden sm:inline text-slate-400">Velocity</span>
+              <span className="font-mono font-bold">{selectedVelocity}</span>
+              <ChevronDown size={12} />
+            </button>
+            {isVelocityOpen && (
+              <div className="absolute right-0 top-full z-[150] mt-1 w-24 overflow-y-auto rounded-lg border border-slate-700 bg-[#0f172a] shadow-xl custom-scrollbar">
+                {VELOCITIES.map((v) => (
+                  <button
+                    key={v}
+                    onClick={() => { onSelectVelocity(v); setIsVelocityOpen(false); }}
+                    className={`w-full text-left px-2 py-1.5 text-xs ${selectedVelocity === v ? 'bg-cyan-900/50 text-cyan-300 font-bold' : 'text-slate-300 hover:bg-slate-800'}`}
+                  >
+                    {v}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
 
-          <label className="flex items-center gap-1 text-[10px] text-slate-400">
-            <span className="font-bold uppercase hidden sm:block">Canal MIDI</span>
-            <select
-              value={selectedChannel}
-              onChange={(e) => onSelectChannel(Number(e.target.value))}
-              className="h-7 rounded bg-[#0a0f1c] border border-slate-700 px-1.5 text-[11px] text-slate-200 outline-none"
+          {/* DROPDOWN CUSTOMIZADO DE CANAL */}
+          <div ref={channelRef} className="relative">
+            <button
+              type="button"
+              onClick={() => setIsChannelOpen(!isChannelOpen)}
+              className="flex h-7 items-center gap-1.5 rounded bg-[#0a0f1c] border border-slate-700 px-2 text-[11px] text-slate-200 outline-none hover:bg-slate-800"
             >
-              {Array.from({ length: 16 }, (_, i) => i + 1).map((ch) => (
-                <option key={ch} value={ch}>{String(ch).padStart(2, '0')}</option>
-              ))}
-            </select>
-          </label>
+              <span className="text-[10px] font-bold uppercase hidden sm:inline text-slate-400">Canal</span>
+              <span className="font-mono font-bold">{String(selectedChannel).padStart(2, '0')}</span>
+              <ChevronDown size={12} />
+            </button>
+            {isChannelOpen && (
+              <div className="absolute right-0 top-full z-[150] mt-1 w-20 overflow-y-auto max-h-48 rounded-lg border border-slate-700 bg-[#0f172a] shadow-xl custom-scrollbar">
+                {Array.from({ length: 16 }, (_, i) => i + 1).map((ch) => (
+                  <button
+                    key={ch}
+                    onClick={() => { onSelectChannel(ch); setIsChannelOpen(false); }}
+                    className={`w-full text-left px-2 py-1.5 text-xs font-mono ${selectedChannel === ch ? 'bg-cyan-900/50 text-cyan-300 font-bold' : 'text-slate-300 hover:bg-slate-800'}`}
+                  >
+                    {String(ch).padStart(2, '0')}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* GRID DE 8 PADS (2 LINHAS X 4 COLUNAS) */}
       <div className="flex-1 w-full min-h-0 p-2 flex items-center justify-center overflow-hidden">
         <div className="grid grid-cols-4 grid-rows-2 gap-2 w-full h-full max-w-[1000px] max-h-[500px]">
           {visiblePads.map((pad) => {
