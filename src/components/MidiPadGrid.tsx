@@ -6,6 +6,10 @@ interface MidiPadGridProps {
   onNoteOff: (note: number) => void;
   onDisabledPress: () => void;
   onActivity?: (velocity: number) => void;
+  selectedChannel: number;
+  onSelectChannel: (channel: number) => void;
+  selectedVelocity: number;
+  onSelectVelocity: (velocity: number) => void;
 }
 
 const ALL_PADS = [
@@ -27,13 +31,22 @@ const ALL_PADS = [
   { id: 76, label: 'Madeira', color: 'bg-stone-500', border: 'border-stone-500/30' },
 ];
 
-export function MidiPadGrid({ isActive, onNoteOn, onNoteOff, onDisabledPress, onActivity }: MidiPadGridProps) {
+const VELOCITIES = [30, 64, 100, 127];
+
+export function MidiPadGrid({ 
+  isActive, onNoteOn, onNoteOff, onDisabledPress, onActivity,
+  selectedChannel, onSelectChannel, selectedVelocity, onSelectVelocity
+}: MidiPadGridProps) {
+  const [activePreset, setActivePreset] = useState<1 | 2>(1);
   const [pressedPads, setPressedPads] = useState<Set<number>>(() => new Set());
   const activePointersRef = useRef<Map<number, number>>(new Map());
   const activeNotesRef = useRef<Set<number>>(new Set());
 
   const onNoteOffRef = useRef(onNoteOff);
   useEffect(() => { onNoteOffRef.current = onNoteOff; }, [onNoteOff]);
+
+  // Pega os 8 pads do preset atual
+  const visiblePads = activePreset === 1 ? ALL_PADS.slice(0, 8) : ALL_PADS.slice(8, 16);
 
   const pressPad = (note: number, pointerId: number) => {
     if (!isActive) {
@@ -98,15 +111,58 @@ export function MidiPadGrid({ isActive, onNoteOn, onNoteOff, onDisabledPress, on
 
   return (
     <div className="flex flex-col w-full h-full bg-[#0a0f1c] rounded-xl border border-[#1e293b] overflow-hidden">
-      <div className="flex items-center justify-between bg-[#0f172a] border-b border-[#1e293b] px-3 py-2 shrink-0">
-        <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">Pads MIDI</span>
-        <span className="text-[10px] text-slate-500 hidden sm:inline">16 notas · toque para disparar</span>
+      
+      {/* BARRA SUPERIOR DE CONTROLE E PRESETS */}
+      <div className="flex flex-wrap sm:flex-nowrap items-center justify-between gap-2 bg-[#0f172a] border-b border-[#1e293b] px-3 py-2 shrink-0">
+        <div className="flex items-center gap-1 sm:gap-2">
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest hidden sm:block mr-1">PADS</span>
+          <button
+            onClick={() => setActivePreset(1)}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${activePreset === 1 ? 'bg-slate-700 text-white' : 'text-slate-400 hover:bg-slate-800'}`}
+          >
+            Preset 1
+          </button>
+          <button
+            onClick={() => setActivePreset(2)}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${activePreset === 2 ? 'bg-slate-700 text-white' : 'text-slate-400 hover:bg-slate-800'}`}
+          >
+            Preset 2
+          </button>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <label className="flex items-center gap-1 text-[10px] text-slate-400">
+            <span className="font-bold uppercase hidden sm:block">Vel.</span>
+            <select
+              value={selectedVelocity}
+              onChange={(e) => onSelectVelocity(Number(e.target.value))}
+              className="h-7 rounded bg-[#0a0f1c] border border-slate-700 px-1.5 text-[11px] text-slate-200 outline-none"
+            >
+              {VELOCITIES.map((v) => (
+                <option key={v} value={v}>{v}</option>
+              ))}
+            </select>
+          </label>
+
+          <label className="flex items-center gap-1 text-[10px] text-slate-400">
+            <span className="font-bold uppercase hidden sm:block">Canal MIDI</span>
+            <select
+              value={selectedChannel}
+              onChange={(e) => onSelectChannel(Number(e.target.value))}
+              className="h-7 rounded bg-[#0a0f1c] border border-slate-700 px-1.5 text-[11px] text-slate-200 outline-none"
+            >
+              {Array.from({ length: 16 }, (_, i) => i + 1).map((ch) => (
+                <option key={ch} value={ch}>{String(ch).padStart(2, '0')}</option>
+              ))}
+            </select>
+          </label>
+        </div>
       </div>
 
-      {/* O container do grid precisa de min-h-0 para não estourar o flex-pai */}
-      <div className="flex-1 min-h-0 w-full p-2 flex items-center justify-center">
-        <div className="grid grid-cols-4 grid-rows-4 gap-1.5 sm:gap-2 w-full h-full max-w-[900px] max-h-full min-h-0">
-          {ALL_PADS.map((pad) => {
+      {/* GRID DE 8 PADS (2 LINHAS X 4 COLUNAS) */}
+      <div className="flex-1 w-full min-h-0 p-2 flex items-center justify-center overflow-hidden">
+        <div className="grid grid-cols-4 grid-rows-2 gap-2 w-full h-full max-w-[1000px] max-h-[500px]">
+          {visiblePads.map((pad) => {
             const isPressed = pressedPads.has(pad.id);
             const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
               if (e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId);
@@ -128,19 +184,19 @@ export function MidiPadGrid({ isActive, onNoteOn, onNoteOff, onDisabledPress, on
                 onPointerUp={handlePointerUp}
                 onPointerCancel={handlePointerUp}
                 onLostPointerCapture={() => releasePad(pad.id, -1)}
-                className={`relative flex flex-col items-center justify-center rounded-lg border-2 transition-all duration-75 select-none cursor-pointer overflow-hidden ${
+                className={`relative flex flex-col items-center justify-center rounded-xl border-2 transition-all duration-75 select-none cursor-pointer overflow-hidden ${
                   isPressed
-                    ? `border-white/80 ${pad.color} shadow-[0_0_15px_rgba(255,255,255,0.4)] scale-[0.96] z-10`
+                    ? `border-white/80 ${pad.color} shadow-[0_0_20px_rgba(255,255,255,0.4)] scale-[0.96] z-10`
                     : `border-[#1e293b] bg-[#0f172a] ${pad.border} hover:bg-[#151e2e] shadow-md`
                 } ${!isActive ? 'opacity-50 grayscale cursor-not-allowed' : ''}`}
                 style={{ touchAction: 'none' }}
               >
                 <div className={`absolute inset-0 opacity-10 ${pad.color} ${isPressed ? 'opacity-50' : ''} transition-opacity`} />
-                <div className="flex flex-col items-center justify-center h-full w-full p-0.5 z-10">
-                  <span className={`text-[10px] sm:text-sm font-extrabold text-center leading-tight drop-shadow-md truncate w-full px-1 ${isPressed ? 'text-white' : 'text-slate-200'}`}>
+                <div className="flex flex-col items-center justify-center h-full w-full p-2 z-10">
+                  <span className={`text-base sm:text-xl font-extrabold text-center leading-tight drop-shadow-md truncate w-full ${isPressed ? 'text-white' : 'text-slate-100'}`}>
                     {pad.label}
                   </span>
-                  <span className={`text-[9px] font-mono mt-0.5 font-bold ${isPressed ? 'text-white/80' : 'text-slate-500'}`}>
+                  <span className={`text-[11px] sm:text-sm font-mono mt-1 font-bold ${isPressed ? 'text-white/80' : 'text-slate-500'}`}>
                     N{pad.id}
                   </span>
                 </div>
