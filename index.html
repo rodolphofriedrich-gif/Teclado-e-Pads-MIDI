@@ -2,9 +2,10 @@
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     
-    <!-- CORRIGIDO: Nome do app padronizado para Teclado e Pads MIDI -->
+    <!-- AQUI: Adicionado viewport-fit=cover para ignorar barras brancas e usar a tela inteira -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    
     <title>Teclado e Pads MIDI</title>
     <meta name="description" content="Teclado e pads MIDI virtuais para aplicativos e dispositivos compatíveis." />
     
@@ -24,8 +25,9 @@
     <link rel="icon" type="image/svg+xml" href="/icon.svg" />
     <link rel="apple-touch-icon" href="/icon-192.png" />
   </head>
-  <!-- CORRIGIDO: Removidas as classes do Tailwind do body. O arquivo index.css já cuida do fundo e das cores. -->
-  <body>
+  
+  <!-- AQUI: Adicionado style inline para garantir fundo escuro imediato e evitar faixa branca -->
+  <body style="margin: 0; padding: 0; background-color: #0a0e1a; overflow: hidden;">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
