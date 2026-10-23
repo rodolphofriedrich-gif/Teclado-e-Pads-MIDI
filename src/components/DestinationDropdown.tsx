@@ -64,7 +64,7 @@ export const DestinationDropdown: React.FC<DestinationDropdownProps> = ({
 
   return (
     <div
-      className={`relative inline-block text-left w-full ${isOpen ? 'z-[999]' : 'z-20'}`}
+      className={`relative inline-block text-left w-full ${isOpen ? 'z-[9999]' : 'z-20'}`}
       ref={containerRef}
     >
       <button
@@ -99,9 +99,9 @@ export const DestinationDropdown: React.FC<DestinationDropdownProps> = ({
       {isOpen && (
         <div
           role="listbox"
-          className="absolute right-0 mt-2 w-[320px] max-w-[calc(100vw-32px)] max-h-[60vh] overflow-y-auto bg-[#0f172a] border border-[#1e293b] rounded-xl shadow-2xl z-[999] divide-y divide-[#1e293b] custom-scrollbar"
+          className="absolute right-0 mt-2 w-[320px] max-w-[calc(100vw-32px)] max-h-[60vh] overflow-y-auto rounded-xl nexus-dropdown custom-scrollbar divide-y divide-[#1e293b]"
         >
-          <div className="px-3 py-2 flex items-center justify-between gap-2 bg-[#0a0f1c] rounded-t-xl">
+          <div className="px-3 py-2 flex items-center justify-between gap-2 nexus-dropdown-heading rounded-t-xl">
             <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400">
               Gerenciar Conexões
             </span>
@@ -142,14 +142,10 @@ export const DestinationDropdown: React.FC<DestinationDropdownProps> = ({
                     key={dest.id}
                     type="button"
                     onClick={() => handleSelect(dest)}
-                    className={`w-full text-left px-3 py-2 text-xs flex items-center justify-between transition-colors ${
-                      isSelected
-                        ? 'bg-emerald-900/30 text-emerald-300 border-l-2 border-emerald-500'
-                        : 'text-slate-300 hover:bg-slate-800 hover:text-white border-l-2 border-transparent'
-                    }`}
+                    className={`nexus-device-option ${isSelected ? 'is-selected' : ''}`}
                   >
                     <div className="truncate pr-2">
-                      <div className="truncate font-semibold flex items-center gap-1.5">
+                      <div className={`truncate font-semibold flex items-center gap-1.5 ${isSelected ? 'text-emerald-300' : ''}`}>
                         {dest.displayName}
                         <span className="text-[9px] uppercase opacity-60">({dest.type})</span>
                       </div>
@@ -179,13 +175,11 @@ export const DestinationDropdown: React.FC<DestinationDropdownProps> = ({
                     key={dest.id}
                     type="button"
                     onClick={() => handleSelect(dest)}
-                    className={`w-full text-left px-3 py-2 text-xs flex items-center justify-between transition-colors ${
-                      isSelected
-                        ? 'bg-cyan-900/30 text-cyan-300 border-l-2 border-cyan-500'
-                        : 'text-slate-300 hover:bg-slate-800 hover:text-white border-l-2 border-transparent'
-                    }`}
+                    className={`nexus-device-option ${isSelected ? 'is-selected' : ''}`}
                   >
-                    <div className="truncate pr-2 font-semibold">{dest.displayName}</div>
+                    <div className={`truncate pr-2 font-semibold ${isSelected ? 'text-cyan-300' : ''}`}>
+                      {dest.displayName}
+                    </div>
                     {isSelected ? (
                       <CheckCircle2 size={14} className="text-cyan-400 shrink-0" />
                     ) : (
