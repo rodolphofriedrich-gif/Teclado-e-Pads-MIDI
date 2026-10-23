@@ -39,20 +39,14 @@ export const DestinationDropdown: React.FC<DestinationDropdownProps> = ({
         setIsOpen(false);
       }
     };
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
+    if (isOpen) document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen]);
 
   const handleToggle = () => {
     const nextState = !isOpen;
     setIsOpen(nextState);
-    if (nextState) {
-      onRefresh();
-    }
+    if (nextState) onRefresh();
   };
 
   const handleSelect = (dest: MidiDestination) => {
@@ -70,44 +64,42 @@ export const DestinationDropdown: React.FC<DestinationDropdownProps> = ({
 
   return (
     <div
-      className={`relative w-full text-left ${isOpen ? 'z-[100]' : 'z-20'}`}
+      className={`relative inline-block text-left w-full ${isOpen ? 'z-[100]' : 'z-20'}`}
       ref={containerRef}
     >
-      {/* Botão Principal Compacto */}
       <button
         type="button"
         onClick={handleToggle}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
-        className={`flex w-full items-center justify-between gap-1.5 px-2.5 h-9 rounded-lg border text-left shadow-sm transition-all focus:outline-none focus:ring-2 ${
+        className={`flex w-full items-center justify-between gap-2.5 px-3 py-2 rounded-lg border text-left shadow-sm transition-all focus:outline-none focus:ring-2 ${
           connectedDestination
             ? 'bg-emerald-950/40 hover:bg-emerald-900/50 border-emerald-700/60 text-emerald-300 focus:ring-emerald-500/50'
-            : 'bg-slate-950 hover:bg-slate-800 border-slate-700 text-slate-300 focus:ring-slate-500/50'
+            : 'bg-[#0f172a] hover:bg-slate-800 border-slate-700 text-slate-300 focus:ring-slate-500/50'
         }`}
       >
-        <div className="flex items-center gap-1.5 truncate">
+        <div className="flex items-center gap-2 truncate">
           {connectedDestination ? (
-            <CheckCircle2 size={14} className="text-emerald-400 shrink-0" />
+            <CheckCircle2 size={16} className="text-emerald-400 shrink-0" />
           ) : (
-            <Circle size={14} className="text-slate-500 shrink-0" />
+            <Circle size={16} className="text-slate-500 shrink-0" />
           )}
-          <span className="truncate text-xs font-semibold">
+          <span className="truncate text-xs sm:text-sm font-semibold">
             {connectedDestination ? connectedDestination.displayName : 'Desconectado'}
           </span>
         </div>
         <ChevronDown
-          size={14}
+          size={16}
           className={`text-slate-400 transition-transform duration-200 shrink-0 ${
             isOpen ? 'rotate-180' : ''
           }`}
         />
       </button>
 
-      {/* Menu Suspenso */}
       {isOpen && (
         <div
           role="listbox"
-          className="absolute left-0 mt-2 w-[280px] sm:w-[320px] max-h-[75vh] overflow-y-auto bg-[#0f172a] border border-[#1e293b] rounded-xl shadow-2xl z-[100] divide-y divide-[#1e293b] custom-scrollbar"
+          className="absolute right-0 mt-2 w-[300px] max-w-[calc(100vw-32px)] max-h-[70vh] overflow-y-auto bg-[#0f172a] border border-[#1e293b] rounded-xl shadow-2xl z-[100] divide-y divide-[#1e293b] custom-scrollbar"
         >
           <div className="px-3 py-2 flex items-center justify-between gap-2 bg-[#0a0f1c] rounded-t-xl">
             <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400">
@@ -117,7 +109,6 @@ export const DestinationDropdown: React.FC<DestinationDropdownProps> = ({
               type="button"
               onClick={onRefresh}
               className="flex items-center gap-1 text-[10px] font-bold text-slate-300 hover:text-white px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 border border-slate-700 transition"
-              title="Atualizar lista de dispositivos"
             >
               <RefreshCw size={12} /> Atualizar
             </button>
@@ -142,9 +133,7 @@ export const DestinationDropdown: React.FC<DestinationDropdownProps> = ({
               <Usb size={12} /> USB / Locais ({usbDestinations.length})
             </div>
             {usbDestinations.length === 0 ? (
-              <div className="px-4 py-2 text-[11px] text-slate-500 italic">
-                Nenhum dispositivo local detectado.
-              </div>
+              <div className="px-4 py-2 text-[11px] text-slate-500 italic">Nenhum dispositivo.</div>
             ) : (
               usbDestinations.map((dest) => {
                 const isSelected = connectedDestination?.id === dest.id;
@@ -162,6 +151,7 @@ export const DestinationDropdown: React.FC<DestinationDropdownProps> = ({
                     <div className="truncate pr-2">
                       <div className="truncate font-semibold flex items-center gap-1.5">
                         {dest.displayName}
+                        <span className="text-[9px] uppercase opacity-60">({dest.type})</span>
                       </div>
                     </div>
                     {isSelected ? (
@@ -180,9 +170,7 @@ export const DestinationDropdown: React.FC<DestinationDropdownProps> = ({
               <Bluetooth size={12} /> Bluetooth BLE ({bleDestinations.length})
             </div>
             {bleDestinations.length === 0 ? (
-              <div className="px-4 py-2 text-[11px] text-slate-500 italic">
-                Nenhum dispositivo BLE.
-              </div>
+              <div className="px-4 py-2 text-[11px] text-slate-500 italic">Nenhum BLE pareado.</div>
             ) : (
               bleDestinations.map((dest) => {
                 const isSelected = connectedDestination?.id === dest.id;
@@ -197,11 +185,7 @@ export const DestinationDropdown: React.FC<DestinationDropdownProps> = ({
                         : 'text-slate-300 hover:bg-slate-800 hover:text-white border-l-2 border-transparent'
                     }`}
                   >
-                    <div className="truncate pr-2">
-                      <div className="truncate font-semibold flex items-center gap-1.5">
-                        {dest.displayName}
-                      </div>
-                    </div>
+                    <div className="truncate pr-2 font-semibold">{dest.displayName}</div>
                     {isSelected ? (
                       <CheckCircle2 size={14} className="text-cyan-400 shrink-0" />
                     ) : (
@@ -226,7 +210,7 @@ export const DestinationDropdown: React.FC<DestinationDropdownProps> = ({
             >
               <span className="flex items-center gap-2">
                 <Radio size={14} className={isScanningBle ? 'animate-pulse' : ''} />
-                {isScanningBle ? 'Buscando...' : 'Buscar BLE'}
+                {isScanningBle ? 'Buscando...' : 'Buscar dispositivo BLE'}
               </span>
             </button>
           </div>
