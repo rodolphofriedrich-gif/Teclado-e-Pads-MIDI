@@ -28,7 +28,6 @@ export default function App() {
   const [isScanningBle, setIsScanningBle] = useState(false);
   const [toast, setToast] = useState<Toast | null>(null);
   
-  // Estado para o Modal de Saída
   const [showExitConfirm, setShowExitConfirm] = useState(false);
 
   const channelRef = useRef(selectedChannel);
@@ -141,20 +140,20 @@ export default function App() {
     }
   };
 
-  // Confirmação real de saída
   const confirmExit = () => {
     const nativeMidi = (window as any).Capacitor?.Plugins?.NativeMidi;
     if (nativeMidi && typeof nativeMidi.fecharApp === 'function') {
       nativeMidi.fecharApp().catch(console.error);
     } else {
-      window.close(); // Fallback para navegador
+      window.close();
     }
   };
 
   const isConnected = Boolean(connectedDestination);
 
   return (
-    <div className="nexus-app fixed inset-0 flex h-screen w-full flex-col overflow-hidden font-sans antialiased select-none bg-black pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
+    // ALTERADO: h-[100dvh] e pt/pb do safe-area para sumir com a faixa branca
+    <div className="nexus-app fixed inset-0 flex h-[100dvh] w-full flex-col overflow-hidden font-sans antialiased select-none bg-black pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
       
       <header className="nexus-header z-50 flex min-h-[60px] shrink-0 items-center justify-between gap-2 px-3 sm:px-5 border-b border-white/5 bg-[#0a0f1c]">
         <div className="flex min-w-0 items-center gap-3 shrink-0">
@@ -266,12 +265,12 @@ export default function App() {
         </div>
       </main>
 
-      {/* MODAL DE SAÍDA CUSTOMIZADO */}
+      {/* MODAL DE SAÍDA USANDO AS CLASSES DO CSS GLOBAL */}
       {showExitConfirm && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="w-full max-w-sm rounded-2xl border border-slate-700 bg-[#0f172a] p-5 shadow-2xl animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 nexus-modal-backdrop flex items-center justify-center p-4 z-[9999]">
+          <div className="nexus-modal w-full max-w-sm rounded-2xl p-5 shadow-2xl">
             <div className="flex items-center gap-3 mb-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-rose-950/50 text-rose-400">
+              <div className="nexus-modal-icon flex h-10 w-10 items-center justify-center rounded-full">
                 <AlertTriangle size={20} />
               </div>
               <h2 className="text-base font-bold text-white">Fechar Aplicativo</h2>
