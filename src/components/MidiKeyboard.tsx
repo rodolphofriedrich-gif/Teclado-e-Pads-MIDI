@@ -326,7 +326,7 @@ export function MidiKeyboard({
       }}
     >
       <div
-        className="nexus-midi-controls relative z-10 flex shrink-0 flex-wrap items-center justify-between gap-2 rounded-xl border px-2 py-1.5 sm:px-3"
+        className="nexus-midi-controls relative z-[100] flex shrink-0 flex-wrap items-center justify-between gap-2 rounded-xl border px-2 py-1.5 sm:px-3"
         style={{
           background: 'rgba(5,10,22,0.76)',
           borderColor: 'rgba(148,163,184,0.14)',
@@ -401,7 +401,7 @@ export function MidiKeyboard({
               <ChevronDown size={12} />
             </button>
             {isVelocityOpen && (
-              <div className="absolute top-full right-1/2 translate-x-1/2 z-[150] mt-2 w-32 overflow-y-auto rounded-xl border border-slate-700 bg-[#0f172a] shadow-2xl custom-scrollbar">
+              <div className="absolute top-full right-1/2 translate-x-1/2 z-[999] mt-2 w-32 overflow-y-auto rounded-xl border border-slate-700 bg-[#0f172a] shadow-2xl custom-scrollbar">
                 <div className="flex flex-col gap-0.5 p-1">
                   {VELOCITIES.map((v) => (
                     <button
@@ -441,7 +441,7 @@ export function MidiKeyboard({
               <ChevronDown size={12} />
             </button>
             {isChannelOpen && (
-              <div className="absolute top-full right-0 z-[150] mt-2 max-h-48 w-24 overflow-y-auto rounded-xl border border-slate-700 bg-[#0f172a] shadow-2xl custom-scrollbar">
+              <div className="absolute top-full right-0 z-[999] mt-2 max-h-48 w-24 overflow-y-auto rounded-xl border border-slate-700 bg-[#0f172a] shadow-2xl custom-scrollbar">
                 <div className="nexus-dropdown-list flex flex-col gap-0.5 p-1">
                   {Array.from({ length: 16 }, (_, i) => {
                     const ch = i + 1;
@@ -480,7 +480,7 @@ export function MidiKeyboard({
             <SlidersHorizontal size={14} />
           </button>
           {isQuickSettingsOpen && (
-            <div className="absolute top-full right-0 z-[150] mt-2 w-64 rounded-xl border border-slate-700 bg-[#0f172a] p-3 shadow-2xl flex flex-col gap-4">
+            <div className="absolute top-full right-0 z-[999] mt-2 w-64 rounded-xl border border-slate-700 bg-[#0f172a] p-3 shadow-2xl flex flex-col gap-4">
               <div>
                 <label className="flex items-center justify-between text-[10px] font-bold uppercase text-slate-400 mb-2">
                   <span>Zoom do Teclado</span>
@@ -525,7 +525,7 @@ export function MidiKeyboard({
         </div>
       </div>
 
-      <div ref={containerRef} className="flex-1 min-h-0 relative flex flex-col">
+      <div ref={containerRef} className="flex-1 min-h-0 relative z-0 flex flex-col">
         <div className="relative flex-1 flex overflow-hidden rounded-xl border border-[#1e293b]">
           {!isScrollLocked && (
             <>
