@@ -1,4 +1,4 @@
-name: Build APK — Teclado MIDI
+name: Build APK — Teclado e Pads MIDI
 on:
   push:
     branches: [main, master]
