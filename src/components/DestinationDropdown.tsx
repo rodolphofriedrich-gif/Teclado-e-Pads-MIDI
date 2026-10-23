@@ -64,7 +64,7 @@ export const DestinationDropdown: React.FC<DestinationDropdownProps> = ({
 
   return (
     <div
-      className={`relative inline-block text-left w-full ${isOpen ? 'z-[100]' : 'z-20'}`}
+      className={`relative inline-block text-left w-full ${isOpen ? 'z-[999]' : 'z-20'}`}
       ref={containerRef}
     >
       <button
@@ -99,7 +99,7 @@ export const DestinationDropdown: React.FC<DestinationDropdownProps> = ({
       {isOpen && (
         <div
           role="listbox"
-          className="absolute right-0 mt-2 w-[300px] max-w-[calc(100vw-32px)] max-h-[70vh] overflow-y-auto bg-[#0f172a] border border-[#1e293b] rounded-xl shadow-2xl z-[100] divide-y divide-[#1e293b] custom-scrollbar"
+          className="absolute right-0 mt-2 w-[320px] max-w-[calc(100vw-32px)] max-h-[60vh] overflow-y-auto bg-[#0f172a] border border-[#1e293b] rounded-xl shadow-2xl z-[999] divide-y divide-[#1e293b] custom-scrollbar"
         >
           <div className="px-3 py-2 flex items-center justify-between gap-2 bg-[#0a0f1c] rounded-t-xl">
             <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400">
