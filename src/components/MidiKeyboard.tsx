@@ -74,10 +74,12 @@ export function MidiKeyboard({
   const [pressedNotes, setPressedNotes] = useState<Set<number>>(() => new Set());
 
   const [isChannelOpen, setIsChannelOpen] = useState(false);
+  const [isVelocityOpen, setIsVelocityOpen] = useState(false); // NOVO
   const [isQuickSettingsOpen, setIsQuickSettingsOpen] = useState(false);
 
   const settingsRef = useRef<HTMLDivElement>(null);
   const channelDropdownRef = useRef<HTMLDivElement>(null);
+  const velocityDropdownRef = useRef<HTMLDivElement>(null); // NOVO
   const scrollViewportRef = useRef<HTMLDivElement>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -101,6 +103,9 @@ export function MidiKeyboard({
       }
       if (channelDropdownRef.current && !channelDropdownRef.current.contains(event.target as Node)) {
         setIsChannelOpen(false);
+      }
+      if (velocityDropdownRef.current && !velocityDropdownRef.current.contains(event.target as Node)) {
+        setIsVelocityOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -381,22 +386,44 @@ export function MidiKeyboard({
           </div>
         </div>
 
-        {/* NOVO: SELETOR DE VELOCITY NO MEIO */}
-        <div className="flex flex-1 justify-center px-2">
-          <label className="flex items-center gap-2 text-[10px] font-bold uppercase text-slate-400">
-            <span>Velocity</span>
-            <select
-              value={selectedVelocity}
-              onChange={(e) => onSelectVelocity(Number(e.target.value))}
-              className="h-8 rounded-lg border border-slate-700 bg-[#0f172a] px-2 text-xs text-slate-200 outline-none"
+        {/* SELETOR DE VELOCITY CUSTOMIZADO */}
+        <div className="flex flex-1 justify-center px-2" ref={velocityDropdownRef}>
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setIsVelocityOpen(!isVelocityOpen)}
+              className="flex h-8 items-center gap-2 rounded-lg border border-slate-700 bg-[#0f172a] px-3 transition hover:bg-slate-800 text-slate-400"
             >
-              {VELOCITIES.map((v) => (
-                <option key={v} value={v}>
-                  {v} {v === 30 ? 'Suave' : v === 64 ? 'Média' : v === 100 ? 'Forte' : 'Máx'}
-                </option>
-              ))}
-            </select>
-          </label>
+              <span className="text-[10px] font-bold uppercase hidden sm:inline">Velocity</span>
+              <span className="font-mono text-xs font-bold text-slate-200">
+                {selectedVelocity}
+              </span>
+              <ChevronDown size={12} />
+            </button>
+            {isVelocityOpen && (
+              <div className="absolute top-full right-1/2 translate-x-1/2 z-[150] mt-2 w-32 overflow-y-auto rounded-xl border border-slate-700 bg-[#0f172a] shadow-2xl custom-scrollbar">
+                <div className="flex flex-col gap-0.5 p-1">
+                  {VELOCITIES.map((v) => (
+                    <button
+                      key={v}
+                      type="button"
+                      onClick={() => {
+                        onSelectVelocity(v);
+                        setIsVelocityOpen(false);
+                      }}
+                      className={`justify-center py-1.5 text-xs rounded transition-colors ${
+                        selectedVelocity === v
+                          ? 'bg-cyan-900/50 text-cyan-300 font-bold'
+                          : 'text-slate-300 hover:bg-slate-800'
+                      }`}
+                    >
+                      {v} {v === 30 ? 'Suave' : v === 64 ? 'Média' : v === 100 ? 'Forte' : 'Máx'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* CANAL E CONFIGURAÇÕES À DIREITA */}
