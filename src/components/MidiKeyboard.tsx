@@ -326,7 +326,7 @@ export function MidiKeyboard({
       }}
     >
       <div
-        className="nexus-midi-controls relative z-50 flex shrink-0 flex-wrap items-center justify-between gap-2 rounded-xl border px-2 py-1.5 sm:px-3"
+        className="nexus-midi-controls relative z-10 flex shrink-0 flex-wrap items-center justify-between gap-2 rounded-xl border px-2 py-1.5 sm:px-3"
         style={{
           background: 'rgba(5,10,22,0.76)',
           borderColor: 'rgba(148,163,184,0.14)',
