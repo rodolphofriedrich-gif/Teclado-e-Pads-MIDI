@@ -132,7 +132,7 @@ export function MidiPadGrid({
   return (
     <div className="flex flex-col w-full h-full bg-[#0a0f1c] rounded-xl border border-[#1e293b] overflow-hidden">
       
-      <div className="flex flex-wrap sm:flex-nowrap items-center justify-between gap-2 bg-[#0f172a] border-b border-[#1e293b] px-3 py-2 shrink-0">
+      <div className="relative z-[100] flex flex-wrap sm:flex-nowrap items-center justify-between gap-2 bg-[#0f172a] border-b border-[#1e293b] px-3 py-2 shrink-0">
         <div className="flex items-center gap-1 sm:gap-2">
           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest hidden sm:block mr-1">PADS</span>
           <button
@@ -162,7 +162,7 @@ export function MidiPadGrid({
               <ChevronDown size={12} />
             </button>
             {isVelocityOpen && (
-              <div className="absolute right-0 top-full z-10 mt-1 w-24 overflow-y-auto rounded-lg border border-slate-700 bg-[#0f172a] shadow-xl custom-scrollbar">
+              <div className="absolute right-0 top-full z-[999] mt-1 w-24 overflow-y-auto rounded-lg border border-slate-700 bg-[#0f172a] shadow-xl custom-scrollbar">
                 {VELOCITIES.map((v) => (
                   <button
                     key={v}
@@ -188,7 +188,7 @@ export function MidiPadGrid({
               <ChevronDown size={12} />
             </button>
             {isChannelOpen && (
-              <div className="absolute right-0 top-full z-10 mt-1 w-24 overflow-y-auto max-h-48 rounded-lg border border-slate-700 bg-[#0f172a] shadow-xl custom-scrollbar">
+              <div className="absolute right-0 top-full z-[999] mt-1 w-20 overflow-y-auto max-h-48 rounded-lg border border-slate-700 bg-[#0f172a] shadow-xl custom-scrollbar">
                 {Array.from({ length: 16 }, (_, i) => i + 1).map((ch) => (
                   <button
                     key={ch}
@@ -204,7 +204,7 @@ export function MidiPadGrid({
         </div>
       </div>
 
-      <div className="flex-1 w-full min-h-0 p-2 flex items-center justify-center overflow-hidden">
+      <div className="flex-1 w-full min-h-0 p-2 flex items-center justify-center overflow-hidden relative z-0">
         <div className="grid grid-cols-4 grid-rows-2 gap-2 w-full h-full max-w-[1000px] max-h-[500px]">
           {visiblePads.map((pad) => {
             const isPressed = pressedPads.has(pad.id);
