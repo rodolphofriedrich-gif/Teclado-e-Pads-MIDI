@@ -5,6 +5,7 @@ on:
     branches: [ "main", "master" ]
   pull_request:
     branches: [ "main", "master" ]
+  workflow_dispatch: # Isso adiciona um botão para você rodar manualmente se quiser
 
 jobs:
   build:
@@ -40,8 +41,15 @@ jobs:
         chmod +x gradlew
         ./gradlew assembleDebug
 
+    # NOVO PASSO: Renomear o APK para ficar bonito ao baixar
+    - name: Renomear APK
+      run: |
+        mkdir -p dist
+        cp android/app/build/outputs/apk/debug/app-debug.apk dist/Teclado-e-Pads-MIDI.apk
+
     - name: Salvar o APK gerado como Artefato
       uses: actions/upload-artifact@v4
       with:
         name: Teclado-e-Pads-MIDI-APK
-          path: android/app/build/outputs/apk/debug/teclado-e-pads-midi.apk
+        path: dist/Teclado-e-Pads-MIDI.apk # Agora o path aponta para o arquivo renomeado
+        retention-days: 15 # Opcional: mantém o arquivo por 15 dias no GitHub
