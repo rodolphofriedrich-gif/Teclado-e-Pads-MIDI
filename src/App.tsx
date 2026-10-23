@@ -14,12 +14,22 @@ const VELOCITIES = [30, 64, 100, 127];
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<AppTab>('keyboard');
-  const [selectedChannel, setSelectedChannel] = useState(1);
-  const [selectedVelocity, setSelectedVelocity] = useState(() => {
-    const saved = localStorage.getItem('midi_velocity');
+  
+  // ESTADOS SEPARADOS PARA TECLADO E PADS
+  const [keyboardChannel, setKeyboardChannel] = useState(1);
+  const [keyboardVelocity, setKeyboardVelocity] = useState(() => {
+    const saved = localStorage.getItem('nexus_keyboard_velocity');
     const value = saved ? Number(saved) : 64;
     return VELOCITIES.includes(value) ? value : 64;
   });
+
+  const [padsChannel, setPadsChannel] = useState(10); // Padrão de bateria é o 10
+  const [padsVelocity, setPadsVelocity] = useState(() => {
+    const saved = localStorage.getItem('nexus_pads_velocity');
+    const value = saved ? Number(saved) : 100;
+    return VELOCITIES.includes(value) ? value : 100;
+  });
+
   const [destinations, setDestinations] = useState<MidiDestination[]>([]);
   const [connectedDestination, setConnectedDestination] = useState<MidiDestination | null>(null);
   const [isActive, setIsActive] = useState(true);
@@ -27,17 +37,28 @@ export default function App() {
   const [activeNotes, setActiveNotes] = useState(0);
   const [isScanningBle, setIsScanningBle] = useState(false);
   const [toast, setToast] = useState<Toast | null>(null);
-  
   const [showExitConfirm, setShowExitConfirm] = useState(false);
 
-  const channelRef = useRef(selectedChannel);
-  const velocityRef = useRef(selectedVelocity);
+  // Refs para garantir que as notas peguem sempre o valor mais atualizado
+  const kChannelRef = useRef(keyboardChannel);
+  const kVelocityRef = useRef(keyboardVelocity);
+  const pChannelRef = useRef(padsChannel);
+  const pVelocityRef = useRef(padsVelocity);
+  const activeTabRef = useRef(activeTab);
 
-  useEffect(() => { channelRef.current = selectedChannel; }, [selectedChannel]);
-  useEffect(() => {
-    velocityRef.current = selectedVelocity;
-    localStorage.setItem('midi_velocity', String(selectedVelocity));
-  }, [selectedVelocity]);
+  useEffect(() => { kChannelRef.current = keyboardChannel; }, [keyboardChannel]);
+  useEffect(() => { 
+    kVelocityRef.current = keyboardVelocity; 
+    localStorage.setItem('nexus_keyboard_velocity', String(keyboardVelocity));
+  }, [keyboardVelocity]);
+
+  useEffect(() => { pChannelRef.current = padsChannel; }, [padsChannel]);
+  useEffect(() => { 
+    pVelocityRef.current = padsVelocity; 
+    localStorage.setItem('nexus_pads_velocity', String(padsVelocity));
+  }, [padsVelocity]);
+  
+  useEffect(() => { activeTabRef.current = activeTab; }, [activeTab]);
 
   useEffect(() => {
     if (!toast) return;
@@ -48,6 +69,14 @@ export default function App() {
   const showToast = useCallback((message: string, type: Toast['type'] = 'info') => {
     setToast({ message, type });
   }, []);
+
+  // Função para trocar de aba e já forçar o Canal 10 nos Pads
+  const handleTabChange = (tab: AppTab) => {
+    if (tab === 'pads' && activeTab !== 'pads') {
+      setPadsChannel(10); // Força o canal 10 ao entrar nos pads
+    }
+    setActiveTab(tab);
+  };
 
   const refreshDestinations = useCallback(async () => {
     const all = await midiManager.getAvailableDestinations();
@@ -119,12 +148,17 @@ export default function App() {
       showToast('Selecione uma saída MIDI antes de tocar.', 'warn');
       return;
     }
-    try { await midiManager.sendKeyboardNote(channelRef.current, note, velocityRef.current, true); }
+    
+    const ch = activeTabRef.current === 'keyboard' ? kChannelRef.current : pChannelRef.current;
+    const vel = activeTabRef.current === 'keyboard' ? kVelocityRef.current : pVelocityRef.current;
+
+    try { await midiManager.sendKeyboardNote(ch, note, vel, true); }
     catch { showToast('Não foi possível enviar a nota MIDI.', 'error'); }
   }, [isActive, showToast]);
 
   const handleNoteOff = useCallback(async (note: number) => {
-    try { await midiManager.sendKeyboardNote(channelRef.current, note, 0, false); } catch {}
+    const ch = activeTabRef.current === 'keyboard' ? kChannelRef.current : pChannelRef.current;
+    try { await midiManager.sendKeyboardNote(ch, note, 0, false); } catch {}
   }, []);
 
   const handleDisabledPress = useCallback(() => {
@@ -135,7 +169,8 @@ export default function App() {
     const next = !isSustainActive;
     setIsSustainActive(next);
     if (midiManager.getConnectedDestination()) {
-      try { await midiManager.sendControlChange(channelRef.current, 64, next ? 127 : 0); }
+      const ch = activeTabRef.current === 'keyboard' ? kChannelRef.current : pChannelRef.current;
+      try { await midiManager.sendControlChange(ch, 64, next ? 127 : 0); }
       catch { showToast('Não foi possível enviar o Sustain.', 'error'); }
     }
   };
@@ -152,7 +187,6 @@ export default function App() {
   const isConnected = Boolean(connectedDestination);
 
   return (
-    // ALTERADO: h-[100dvh] e pt/pb do safe-area para sumir com a faixa branca
     <div className="nexus-app fixed inset-0 flex h-[100dvh] w-full flex-col overflow-hidden font-sans antialiased select-none bg-black pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
       
       <header className="nexus-header z-50 flex min-h-[60px] shrink-0 items-center justify-between gap-2 px-3 sm:px-5 border-b border-white/5 bg-[#0a0f1c]">
@@ -169,7 +203,7 @@ export default function App() {
           <div className="flex h-10 items-center rounded-xl border border-slate-700/50 bg-[#0f172a] p-1">
             <button
               type="button"
-              onClick={() => setActiveTab('keyboard')}
+              onClick={() => handleTabChange('keyboard')}
               className={`flex items-center justify-center gap-2 rounded-lg px-4 py-1.5 text-xs font-bold transition ${
                 activeTab === 'keyboard' ? 'bg-cyan-600 text-white shadow-md' : 'text-slate-400 hover:text-slate-200'
               }`}
@@ -179,7 +213,7 @@ export default function App() {
             </button>
             <button
               type="button"
-              onClick={() => setActiveTab('pads')}
+              onClick={() => handleTabChange('pads')}
               className={`flex items-center justify-center gap-2 rounded-lg px-4 py-1.5 text-xs font-bold transition ${
                 activeTab === 'pads' ? 'bg-cyan-600 text-white shadow-md' : 'text-slate-400 hover:text-slate-200'
               }`}
@@ -218,10 +252,10 @@ export default function App() {
           <div className="flex min-h-0 flex-1 flex-col z-10 relative">
             <MidiKeyboard
               isConnected={isConnected}
-              selectedChannel={selectedChannel}
-              onSelectChannel={setSelectedChannel}
-              selectedVelocity={selectedVelocity}
-              onSelectVelocity={setSelectedVelocity}
+              selectedChannel={keyboardChannel}
+              onSelectChannel={setKeyboardChannel}
+              selectedVelocity={keyboardVelocity}
+              onSelectVelocity={setKeyboardVelocity}
               onNoteOn={handleNoteOn}
               onNoteOff={handleNoteOff}
               onDisabledPress={handleDisabledPress}
@@ -244,10 +278,10 @@ export default function App() {
               onNoteOn={handleNoteOn}
               onNoteOff={handleNoteOff}
               onDisabledPress={handleDisabledPress}
-              selectedChannel={selectedChannel}
-              onSelectChannel={setSelectedChannel}
-              selectedVelocity={selectedVelocity}
-              onSelectVelocity={setSelectedVelocity}
+              selectedChannel={padsChannel}
+              onSelectChannel={setPadsChannel}
+              selectedVelocity={padsVelocity}
+              onSelectVelocity={setPadsVelocity}
             />
           </div>
         )}
@@ -265,7 +299,6 @@ export default function App() {
         </div>
       </main>
 
-      {/* MODAL DE SAÍDA USANDO AS CLASSES DO CSS GLOBAL */}
       {showExitConfirm && (
         <div className="fixed inset-0 nexus-modal-backdrop flex items-center justify-center p-4 z-[9999]">
           <div className="nexus-modal w-full max-w-sm rounded-2xl p-5 shadow-2xl">
@@ -276,7 +309,7 @@ export default function App() {
               <h2 className="text-base font-bold text-white">Fechar Aplicativo</h2>
             </div>
             <p className="text-sm text-slate-300 mb-6">
-              Deseja realmente fechar o aplicativo? Certifique-se de ter salvo suas configurações.
+              Deseja realmente fechar o aplicativo?
             </p>
             <div className="flex justify-end gap-3">
               <button
