@@ -162,7 +162,7 @@ export function MidiPadGrid({
               <ChevronDown size={12} />
             </button>
             {isVelocityOpen && (
-              <div className="absolute right-0 top-full z-[150] mt-1 w-24 overflow-y-auto rounded-lg border border-slate-700 bg-[#0f172a] shadow-xl custom-scrollbar">
+              <div className="absolute right-0 top-full z-10 mt-1 w-24 overflow-y-auto rounded-lg border border-slate-700 bg-[#0f172a] shadow-xl custom-scrollbar">
                 {VELOCITIES.map((v) => (
                   <button
                     key={v}
@@ -188,7 +188,7 @@ export function MidiPadGrid({
               <ChevronDown size={12} />
             </button>
             {isChannelOpen && (
-              <div className="absolute right-0 top-full z-[150] mt-1 w-20 overflow-y-auto max-h-48 rounded-lg border border-slate-700 bg-[#0f172a] shadow-xl custom-scrollbar">
+              <div className="absolute right-0 top-full z-10 mt-1 w-24 overflow-y-auto max-h-48 rounded-lg border border-slate-700 bg-[#0f172a] shadow-xl custom-scrollbar">
                 {Array.from({ length: 16 }, (_, i) => i + 1).map((ch) => (
                   <button
                     key={ch}
