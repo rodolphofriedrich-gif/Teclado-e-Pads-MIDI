@@ -1,4 +1,4 @@
-name: Android CI / Build APK
+name: Build APK — Teclado e Pads MIDI
 
 on:
   push:
