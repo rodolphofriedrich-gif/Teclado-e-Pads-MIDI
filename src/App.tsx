@@ -141,25 +141,48 @@ export default function App() {
   const isConnected = Boolean(connectedDestination);
 
   return (
-    <div className="nexus-app fixed inset-0 flex h-screen w-full flex-col overflow-hidden font-sans antialiased select-none bg-[#0a0f1c]">
+    <div className="nexus-app fixed inset-0 flex h-screen w-full flex-col overflow-hidden font-sans antialiased select-none bg-[#05080f]">
       
-      {/* TOP BAR - Controles Integrados */}
-      <header className="nexus-header z-30 flex min-h-[60px] shrink-0 items-center justify-between gap-2 px-3 py-2 bg-slate-900 border-b border-slate-800">
-        
-        {/* Logo e Título */}
-        <div className="flex min-w-0 items-center gap-2 shrink-0">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-cyan-400/25 bg-cyan-400/10 text-cyan-300">
-            <Music2 size={20} />
+      {/* CABEÇALHO INTEGRADO */}
+      <header className="nexus-header z-30 flex min-h-[60px] shrink-0 items-center justify-between gap-2 px-3 sm:px-5 border-b border-white/5 bg-[#0a0f1c]">
+        <div className="flex min-w-0 items-center gap-3 shrink-0">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-cyan-400/25 bg-cyan-400/10 text-cyan-300">
+            <Music2 size={23} />
           </div>
           <div className="min-w-0 hidden md:block">
-            <h1 className="text-sm font-extrabold tracking-wide text-white">Teclado e Pads</h1>
+            <h1 className="text-sm font-extrabold tracking-wide text-white sm:text-base">Teclado e Pads</h1>
           </div>
         </div>
 
-        {/* Controles (Saída, Modo, Vel, CH) - Ocupam o centro e rolam se faltar espaço */}
-        <div className="flex flex-1 items-center justify-center gap-2 overflow-x-auto no-scrollbar px-2">
-          
-          <div className="min-w-[140px] shrink-0">
+        {/* ABAS NO CENTRO */}
+        <div className="flex flex-1 justify-center overflow-x-auto px-2 hide-scrollbar">
+          <div className="flex h-10 items-center rounded-xl border border-slate-700/50 bg-[#0f172a] p-1">
+            <button
+              type="button"
+              onClick={() => setActiveTab('keyboard')}
+              className={`flex items-center justify-center gap-2 rounded-lg px-4 py-1.5 text-xs font-bold transition ${
+                activeTab === 'keyboard' ? 'bg-cyan-600 text-white shadow-md' : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <Music2 size={16} />
+              <span>Teclado</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('pads')}
+              className={`flex items-center justify-center gap-2 rounded-lg px-4 py-1.5 text-xs font-bold transition ${
+                activeTab === 'pads' ? 'bg-cyan-600 text-white shadow-md' : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <LayoutGrid size={16} />
+              <span>Pads</span>
+            </button>
+          </div>
+        </div>
+
+        {/* DIREITA: DROPDOWN DE SAÍDA E STATUS */}
+        <div className="flex items-center gap-2 shrink-0">
+          <div className="hidden sm:block w-[220px] lg:w-[280px]">
             <DestinationDropdown
               destinations={destinations}
               connectedDestination={connectedDestination}
@@ -170,75 +193,25 @@ export default function App() {
               isScanningBle={isScanningBle}
             />
           </div>
-
-          <div className="flex h-9 shrink-0 items-center rounded-lg border border-slate-700/50 bg-slate-950 p-0.5">
-            <button
-              type="button"
-              onClick={() => setActiveTab('keyboard')}
-              className={`flex items-center justify-center gap-1.5 rounded-md px-3 py-1 text-xs font-bold transition ${
-                activeTab === 'keyboard' ? 'bg-cyan-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              <Music2 size={14} />
-              <span className="hidden sm:inline">Teclado</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab('pads')}
-              className={`flex items-center justify-center gap-1.5 rounded-md px-3 py-1 text-xs font-bold transition ${
-                activeTab === 'pads' ? 'bg-cyan-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              <LayoutGrid size={14} />
-              <span className="hidden sm:inline">Pads</span>
-            </button>
-          </div>
-
-          <select
-            value={selectedVelocity}
-            onChange={(e) => setSelectedVelocity(Number(e.target.value))}
-            className="h-9 shrink-0 rounded-lg border border-slate-700 bg-slate-950 px-2 text-xs text-slate-100 outline-none focus:border-cyan-400"
-            title="Velocity"
-          >
-            {VELOCITIES.map((v) => (
-              <option key={v} value={v}>
-                Vel: {v}
-              </option>
-            ))}
-          </select>
-
-          <select
-            value={selectedChannel}
-            onChange={(e) => setSelectedChannel(Number(e.target.value))}
-            className="h-9 shrink-0 rounded-lg border border-slate-700 bg-slate-950 px-2 text-xs text-slate-100 outline-none focus:border-cyan-400"
-            title="Canal MIDI"
-          >
-            {Array.from({ length: 16 }, (_, i) => i + 1).map((ch) => (
-              <option key={ch} value={ch}>CH {String(ch).padStart(2, '0')}</option>
-            ))}
-          </select>
-        </div>
-
-        {/* Status e PWA */}
-        <div className="flex shrink-0 items-center gap-2">
-          <PWAInstallButton />
-          <div className="flex items-center gap-1.5 rounded-full border border-slate-700 bg-slate-950/60 px-2.5 py-1">
-            <span className={`h-2 w-2 rounded-full ${isConnected ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,.6)]' : 'bg-amber-400'}`} />
-            <span className="hidden sm:inline max-w-[100px] truncate text-[10px] font-semibold text-slate-300">
+          <div className="flex items-center gap-1.5 rounded-full border border-slate-700 bg-slate-900/60 px-3 py-2">
+            <span className={`h-2.5 w-2.5 rounded-full ${isConnected ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,.6)]' : 'bg-amber-400'}`} />
+            <span className="hidden lg:inline max-w-[120px] truncate text-[11px] font-semibold text-slate-300">
               {isConnected ? connectedDestination?.displayName : 'Sem saída'}
             </span>
           </div>
         </div>
       </header>
 
-      {/* ÁREA PRINCIPAL (Teclado ou Pads) - Totalmente expandida */}
-      <main className="flex min-h-0 flex-1 flex-col overflow-hidden px-2 py-2 sm:px-4">
+      {/* CONTEÚDO PRINCIPAL */}
+      <main className="flex min-h-0 flex-1 flex-col overflow-hidden p-2 sm:p-3">
         {activeTab === 'keyboard' && (
           <div className="flex min-h-0 flex-1 flex-col">
             <MidiKeyboard
               isConnected={isConnected}
               selectedChannel={selectedChannel}
               onSelectChannel={setSelectedChannel}
+              selectedVelocity={selectedVelocity}
+              onSelectVelocity={setSelectedVelocity}
               onNoteOn={handleNoteOn}
               onNoteOff={handleNoteOff}
               onDisabledPress={handleDisabledPress}
@@ -253,6 +226,7 @@ export default function App() {
             />
           </div>
         )}
+        
         {activeTab === 'pads' && (
           <div className="flex min-h-0 flex-1 flex-col">
             <MidiPadGrid
@@ -260,25 +234,28 @@ export default function App() {
               onNoteOn={handleNoteOn}
               onNoteOff={handleNoteOff}
               onDisabledPress={handleDisabledPress}
+              selectedChannel={selectedChannel}
+              onSelectChannel={setSelectedChannel}
+              selectedVelocity={selectedVelocity}
+              onSelectVelocity={setSelectedVelocity}
             />
           </div>
         )}
 
-        {/* Rodapé Minimalista */}
-        <div className="mt-2 flex shrink-0 items-center justify-between gap-2 rounded-lg border border-white/5 bg-slate-950/80 px-3 py-1.5">
+        {/* RODAPÉ DE STATUS */}
+        <div className="mt-2 flex shrink-0 items-center justify-between gap-2 rounded-lg border border-white/10 bg-[#0a0f1c] px-3 py-2">
           <div className="flex min-w-0 items-center gap-2">
             <span className={`h-2 w-2 shrink-0 rounded-full ${isConnected ? 'bg-emerald-400' : 'bg-amber-400'}`} />
-            <span className="truncate text-[10px] text-slate-400">
+            <span className="truncate text-[11px] text-slate-300">
               {isConnected ? `Conectado: ${connectedDestination?.displayName}` : 'Sem conexão MIDI'}
             </span>
           </div>
           <div className="flex shrink-0 items-center gap-1 text-[10px] text-slate-500">
-            <Volume2 size={12} /> {activeNotes} ativa(s)
+            <Volume2 size={13} /> {activeNotes} ativa(s)
           </div>
         </div>
       </main>
 
-      {/* TOAST DE AVISO */}
       {toast && (
         <button
           type="button"
