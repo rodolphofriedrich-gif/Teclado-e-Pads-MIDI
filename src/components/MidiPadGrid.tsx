@@ -34,13 +34,17 @@ const ALL_PADS = [
 
 const VELOCITIES = [30, 64, 100, 127];
 
+type OpenDropdown = 'velocity' | 'channel' | null;
+
 export function MidiPadGrid({ isActive, onNoteOn, onNoteOff, onDisabledPress, selectedChannel, onSelectChannel, selectedVelocity, onSelectVelocity }: MidiPadGridProps) {
   const [activePreset, setActivePreset] = useState<1 | 2>(1);
   const [pressedPads, setPressedPads] = useState<Set<number>>(() => new Set());
   const activePointersRef = useRef<Map<number, number>>(new Map());
   const activeNotesRef = useRef<Set<number>>(new Set());
-  const [isVelocityOpen, setIsVelocityOpen] = useState(false);
-  const [isChannelOpen, setIsChannelOpen] = useState(false);
+  
+  // CORREÇÃO: Estado único
+  const [activeDropdown, setActiveDropdown] = useState<OpenDropdown>(null);
+  
   const velocityRef = useRef<HTMLDivElement>(null);
   const channelRef = useRef<HTMLDivElement>(null);
   const onNoteOffRef = useRef(onNoteOff);
@@ -49,8 +53,13 @@ export function MidiPadGrid({ isActive, onNoteOn, onNoteOff, onDisabledPress, se
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (velocityRef.current && !velocityRef.current.contains(event.target as Node)) setIsVelocityOpen(false);
-      if (channelRef.current && !channelRef.current.contains(event.target as Node)) setIsChannelOpen(false);
+      const target = event.target as Node;
+      const inVelocity = velocityRef.current?.contains(target);
+      const inChannel = channelRef.current?.contains(target);
+      
+      if (!inVelocity && !inChannel) {
+        setActiveDropdown(null);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -111,16 +120,16 @@ export function MidiPadGrid({ isActive, onNoteOn, onNoteOff, onDisabledPress, se
 
         <div className="flex items-center gap-2">
           <div ref={velocityRef} className="relative">
-            <button type="button" onClick={() => setIsVelocityOpen(!isVelocityOpen)} className="flex h-9 items-center gap-2 rounded-lg border border-slate-700 bg-[#0f172a] px-3 transition hover:bg-slate-800 text-slate-400">
+            <button type="button" onClick={() => setActiveDropdown(activeDropdown === 'velocity' ? null : 'velocity')} className="flex h-9 items-center gap-2 rounded-lg border border-slate-700 bg-[#0f172a] px-3 transition hover:bg-slate-800 text-slate-400">
               <span className="text-[10px] font-bold uppercase hidden sm:inline">Velocity</span>
               <span className="font-mono text-xs font-bold text-slate-200">{selectedVelocity}</span>
               <ChevronDown size={12} />
             </button>
-            {isVelocityOpen && (
+            {activeDropdown === 'velocity' && (
               <div className="absolute right-0 top-full z-[999] mt-2 w-32 overflow-y-auto rounded-xl border border-slate-700 bg-[#0f172a] shadow-2xl custom-scrollbar">
                 <div className="flex flex-col gap-0.5 p-1">
                   {VELOCITIES.map((v) => (
-                    <button key={v} type="button" onClick={() => { onSelectVelocity(v); setIsVelocityOpen(false); }} className={`justify-center py-2 text-[11px] rounded transition-colors ${selectedVelocity === v ? 'bg-cyan-900/50 text-cyan-300 font-bold' : 'text-slate-300 hover:bg-slate-800'}`}>
+                    <button key={v} type="button" onClick={() => { onSelectVelocity(v); setActiveDropdown(null); }} className={`justify-center py-2 text-[11px] rounded transition-colors ${selectedVelocity === v ? 'bg-cyan-900/50 text-cyan-300 font-bold' : 'text-slate-300 hover:bg-slate-800'}`}>
                       {v} {v === 30 ? 'Suave' : v === 64 ? 'Méd' : v === 100 ? 'Forte' : 'Máx'}
                     </button>
                   ))}
@@ -130,16 +139,16 @@ export function MidiPadGrid({ isActive, onNoteOn, onNoteOff, onDisabledPress, se
           </div>
 
           <div ref={channelRef} className="relative">
-            <button type="button" onClick={() => setIsChannelOpen(!isChannelOpen)} className="flex h-9 items-center gap-1.5 rounded-lg border border-[#1e293b] bg-[#0f172a] px-2.5 transition hover:bg-slate-800 text-slate-400">
+            <button type="button" onClick={() => setActiveDropdown(activeDropdown === 'channel' ? null : 'channel')} className="flex h-9 items-center gap-1.5 rounded-lg border border-[#1e293b] bg-[#0f172a] px-2.5 transition hover:bg-slate-800 text-slate-400">
               <span className="text-[10px] font-bold uppercase hidden sm:inline">Canal</span>
               <span className="min-w-[16px] text-center font-mono text-xs font-bold text-cyan-300">{String(selectedChannel).padStart(2, '0')}</span>
               <ChevronDown size={12} />
             </button>
-            {isChannelOpen && (
+            {activeDropdown === 'channel' && (
               <div className="absolute right-0 top-full z-[999] mt-2 max-h-48 w-24 overflow-y-auto rounded-xl border border-slate-700 bg-[#0f172a] shadow-2xl custom-scrollbar">
                 <div className="nexus-dropdown-list flex flex-col gap-0.5 p-1">
                   {Array.from({ length: 16 }, (_, i) => i + 1).map((ch) => (
-                    <button key={ch} type="button" onClick={() => { onSelectChannel(ch); setIsChannelOpen(false); }} className={`justify-center py-2 font-mono text-xs rounded transition-colors ${selectedChannel === ch ? 'bg-cyan-900/50 text-cyan-300 font-bold' : 'text-slate-300 hover:bg-slate-800'}`}>
+                    <button key={ch} type="button" onClick={() => { onSelectChannel(ch); setActiveDropdown(null); }} className={`justify-center py-2 font-mono text-xs rounded transition-colors ${selectedChannel === ch ? 'bg-cyan-900/50 text-cyan-300 font-bold' : 'text-slate-300 hover:bg-slate-800'}`}>
                       {String(ch).padStart(2, '0')}
                     </button>
                   ))}
