@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ChevronDown, Settings, X, Check, Lock } from 'lucide-react';
+import { ChevronDown, Settings, X, Check } from 'lucide-react';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 
 interface MidiPadGridProps {
@@ -12,8 +12,6 @@ interface MidiPadGridProps {
   selectedVelocity: number;
   onSelectVelocity: (velocity: number) => void;
   isStageMode: boolean;
-  isPro: boolean;
-  onRequestPro: () => void;
 }
 
 const DEFAULT_PADS = [
@@ -46,7 +44,7 @@ const COLOR_OPTIONS = [
 const VELOCITIES = [30, 64, 100, 127];
 type OpenDropdown = 'velocity' | 'channel' | null;
 
-export function MidiPadGrid({ isActive, onNoteOn, onNoteOff, onDisabledPress, selectedChannel, onSelectChannel, selectedVelocity, onSelectVelocity, isStageMode, isPro, onRequestPro }: MidiPadGridProps) {
+export function MidiPadGrid({ isActive, onNoteOn, onNoteOff, onDisabledPress, selectedChannel, onSelectChannel, selectedVelocity, onSelectVelocity, isStageMode }: MidiPadGridProps) {
   const [activePreset, setActivePreset] = useState<1 | 2>(1);
   const [pressedPads, setPressedPads] = useState<Set<number>>(() => new Set());
   
@@ -123,19 +121,13 @@ export function MidiPadGrid({ isActive, onNoteOn, onNoteOff, onDisabledPress, se
     return () => { window.removeEventListener('blur', releaseAllNotes); window.removeEventListener('pointerup', handleGlobalPointerUp); window.removeEventListener('pointercancel', handleGlobalPointerUp); releaseAllNotes(); };
   }, []);
 
-  const toggleEditMode = () => {
-    if (!isPro) { onRequestPro(); return; }
-    setIsEditMode(!isEditMode);
-  };
-
   return (
     <div className={`flex flex-col w-full h-full overflow-hidden ${isStageMode ? 'rounded-none border-0 bg-black' : 'bg-[#0a0f1c] rounded-xl border border-[#1e293b]'}`}>
       
       {!isStageMode && (
         <div className="relative z-[100] flex flex-wrap sm:flex-nowrap items-center justify-between gap-2 bg-[#0f172a] border-b border-[#1e293b] px-3 py-2 shrink-0">
           <div className="flex items-center gap-1 sm:gap-2">
-            <button onClick={toggleEditMode} className={`relative p-1.5 rounded-lg border transition ${isEditMode ? 'bg-amber-600 text-white border-amber-500' : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-white'}`} title="Editar Pads">
-              {!isPro && <div className="absolute -top-1 -right-1 bg-amber-500 rounded-full p-0.5 border border-slate-900"><Lock size={8} className="text-black" /></div>}
+            <button onClick={() => setIsEditMode(!isEditMode)} className={`p-1.5 rounded-lg border transition ${isEditMode ? 'bg-amber-600 text-white border-amber-500' : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-white'}`} title="Editar Pads">
               <Settings size={16} />
             </button>
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest hidden sm:block mr-1 ml-1">PADS</span>
@@ -178,12 +170,12 @@ export function MidiPadGrid({ isActive, onNoteOn, onNoteOff, onDisabledPress, se
                 onPointerDown={(e) => { if (e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId); pressPad(pad.id, e.pointerId); }}
                 onPointerEnter={(e) => { if (activePointersRef.current.has(e.pointerId)) pressPad(pad.id, e.pointerId); }}
                 onPointerUp={(e) => releasePad(pad.id, e.pointerId)} onPointerCancel={(e) => releasePad(pad.id, e.pointerId)} onLostPointerCapture={() => releasePad(pad.id, -1)}
-                onClick={() => { if (isEditMode && isPro) setEditingPadIndex(realIndex); }}
+                onClick={() => { if (isEditMode) setEditingPadIndex(realIndex); }}
                 className={`relative flex flex-col items-center justify-center rounded-xl border-2 transition-all duration-75 select-none cursor-pointer overflow-hidden ${
                   isPressed ? `border-white ${pad.color} shadow-[0_0_20px_rgba(255,255,255,0.4)] scale-[0.96] z-10` : `bg-[#0f172a] ${pad.border} hover:bg-[#151e2e] shadow-md`
                 } ${!isActive && !isEditMode ? 'opacity-50 grayscale cursor-not-allowed' : ''} ${isEditMode ? 'ring-2 ring-amber-500/50' : ''}`} style={{ touchAction: 'none' }}>
                 <div className={`absolute inset-0 opacity-20 ${pad.color} ${isPressed ? 'opacity-50' : ''} transition-opacity`} />
-                {isEditMode && isPro && (
+                {isEditMode && (
                   <div className="absolute top-1 right-1 bg-amber-500 rounded-full p-1 z-20"><Settings size={12} className="text-white" /></div>
                 )}
                 <div className="flex flex-col items-center justify-center h-full w-full p-1 z-10">
@@ -196,11 +188,11 @@ export function MidiPadGrid({ isActive, onNoteOn, onNoteOff, onDisabledPress, se
         </div>
       </div>
 
-      {editingPadIndex !== null && isPro && (
+      {editingPadIndex !== null && (
         <div className="fixed inset-0 z-[9999] bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
           <div className="bg-[#0f172a] border border-slate-700 rounded-2xl p-5 w-full max-w-sm shadow-2xl">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-white font-bold text-sm">Editar Pad PRO</h3>
+              <h3 className="text-white font-bold text-sm">Editar Pad</h3>
               <button onClick={() => setEditingPadIndex(null)} className="text-slate-400 hover:text-white"><X size={18} /></button>
             </div>
             
