@@ -211,6 +211,7 @@ export function MidiKeyboard({ isConnected, selectedChannel, onSelectChannel, se
         <div className={`relative flex-1 flex overflow-hidden ${isStageMode ? 'rounded-none border-0' : 'rounded-xl border border-[#1e293b]'}`}>
           
           {/* CONTROLES DE PERFORMANCE À ESQUERDA (Com proteção de notch) */}
+          {/* O pl-[env(safe-area-inset-left)] empurra os controles para a direita se houver notch na esquerda */}
           <div className="flex flex-col gap-3 p-2 pl-[calc(env(safe-area-inset-left)+8px)] bg-[#0a0f1c] border-r border-slate-800 z-20 touch-none w-[70px] shrink-0 items-center shadow-[2px_0_10px_rgba(0,0,0,0.5)]">
             
             <div className="flex flex-col items-center w-full">
@@ -238,8 +239,21 @@ export function MidiKeyboard({ isConnected, selectedChannel, onSelectChannel, se
           <div className="relative flex-1 flex flex-col">
             {!isScrollLocked && (
               <>
-                <button onClick={() => scrollKeyboard('left')} className="absolute left-1 top-1/2 -translate-y-1/2 z-40 p-2 bg-black/60 hover:bg-black/90 text-white rounded-full backdrop-blur-sm shadow-xl transition-all active:scale-95 border border-white/10"><ChevronLeft size={24} /></button>
-                <button onClick={() => scrollKeyboard('right')} className="absolute right-1 top-1/2 -translate-y-1/2 z-40 p-2 bg-black/60 hover:bg-black/90 text-white rounded-full backdrop-blur-sm shadow-xl transition-all active:scale-95 border border-white/10"><ChevronRight size={24} /></button>
+                {/* Botão Esquerdo */}
+                <button 
+                  onClick={() => scrollKeyboard('left')} 
+                  className="absolute left-[calc(env(safe-area-inset-left)+4px)] top-1/2 -translate-y-1/2 z-[999] p-2 bg-black/60 hover:bg-black/90 text-white rounded-full backdrop-blur-sm shadow-xl transition-all active:scale-95 border border-white/10"
+                >
+                  <ChevronLeft size={24} />
+                </button>
+                
+                {/* Botão Direito - Trazido para frente com z-[999] */}
+                <button 
+                  onClick={() => scrollKeyboard('right')} 
+                  className="absolute right-[calc(env(safe-area-inset-right)+4px)] top-1/2 -translate-y-1/2 z-[999] p-2 bg-black/60 hover:bg-black/90 text-white rounded-full backdrop-blur-sm shadow-xl transition-all active:scale-95 border border-white/10"
+                >
+                  <ChevronRight size={24} />
+                </button>
               </>
             )}
 
