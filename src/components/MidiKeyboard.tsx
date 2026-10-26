@@ -210,33 +210,62 @@ export function MidiKeyboard({ isConnected, selectedChannel, onSelectChannel, se
       <div ref={containerRef} className="flex-1 min-h-0 relative z-0 flex flex-col">
         <div className={`relative flex-1 flex overflow-hidden ${isStageMode ? 'rounded-none border-0' : 'rounded-xl border border-[#1e293b]'}`}>
           
-          {!isScrollLocked && (
-            <>
-              <button onClick={() => scrollKeyboard('left')} className="absolute left-1 top-1/2 -translate-y-1/2 z-40 p-2 bg-black/60 hover:bg-black/90 text-white rounded-full backdrop-blur-sm shadow-xl transition-all active:scale-95 border border-white/10"><ChevronLeft size={24} /></button>
-              <button onClick={() => scrollKeyboard('right')} className="absolute right-1 top-1/2 -translate-y-1/2 z-40 p-2 bg-black/60 hover:bg-black/90 text-white rounded-full backdrop-blur-sm shadow-xl transition-all active:scale-95 border border-white/10"><ChevronRight size={24} /></button>
-            </>
-          )}
-
-          <div ref={scrollViewportRef} className={`nexus-midi-viewport relative flex-1 ${isScrollLocked ? 'overflow-hidden' : 'overflow-x-auto overflow-y-hidden'}`} style={{ background: 'radial-gradient(ellipse at 50% 0%, rgba(30,41,59,0.72), rgba(2,6,23,0.98) 78%)', touchAction: isScrollLocked ? 'none' : 'pan-x', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}>
-            <div className="relative flex h-full items-stretch p-0.5" style={{ width: `${TOTAL_WHITE_KEYS * keyWidth}px`, minWidth: `${TOTAL_WHITE_KEYS * keyWidth}px`, marginInline: isScrollLocked ? 'auto' : undefined }}>{renderKeys()}</div>
-          </div>
-
-          <div className="flex flex-row items-stretch gap-1 px-1 py-2 bg-[#0a0f1c] border-l border-slate-800 z-20 touch-none relative">
-            <div className="flex flex-col items-center justify-between w-8">
-              <span className="text-[8px] font-bold text-slate-500">P.BEND</span>
-              <div className="relative flex-1 w-6 bg-[#05080f] rounded-full border border-slate-700 overflow-hidden my-1">
-                <div className="absolute w-full bg-gradient-to-t from-cyan-900 to-cyan-500" style={{ bottom: '50%', height: `${((pitchBend - 8192) / 8192) * 50}%` }} />
-                <div className="absolute w-full bg-gradient-to-b from-cyan-900 to-cyan-500" style={{ top: '50%', height: `${((8192 - pitchBend) / 8192) * 50}%` }} />
+          {/* CONTROLES DE PERFORMANCE À ESQUERDA */}
+          <div className="flex flex-col gap-2 p-2 bg-[#0a0f1c] border-r border-slate-800 z-20 touch-none w-16 shrink-0 items-center">
+            {/* Pitch Bend (Alavanca Horizontal) */}
+            <div className="flex flex-col items-center w-full">
+              <span className="text-[9px] font-bold text-slate-500 mb-1">P.BEND</span>
+              <div className="relative w-12 h-6 bg-[#05080f] rounded-full border border-slate-700 overflow-hidden flex items-center shadow-inner">
+                <div className="absolute h-3 w-full bg-slate-800/50"></div>
+                <div 
+                  className="absolute h-full bg-cyan-600/50 rounded-full transition-all duration-75"
+                  style={{
+                    left: pitchBend > 8192 ? '50%' : `${(pitchBend / 8192) * 50}%`,
+                    right: pitchBend < 8192 ? '50%' : `${100 - ((pitchBend - 8192) / 8192) * 50}%`
+                  }} 
+                />
+                <div 
+                  className="absolute top-1/2 -translate-y-1/2 w-2 h-4 bg-cyan-300 rounded shadow-md transition-all duration-75 pointer-events-none"
+                  style={{ left: `calc(${(pitchBend / 16383) * 100}% - 4px)` }}
+                />
               </div>
-              <input type="range" min="0" max="16383" value={pitchBend} onChange={(e) => setPitchBend(Number(e.target.value))} onPointerUp={() => setPitchBend(8192)} onTouchEnd={() => setPitchBend(8192)} onMouseUp={() => setPitchBend(8192)} className="absolute inset-0 w-full h-full opacity-0 cursor-ns-resize" style={{ WebkitAppearance: 'slider-vertical', writingMode: 'vertical-lr', direction: 'rtl' }} />
+              <input 
+                type="range" min="0" max="16383" value={pitchBend} 
+                onChange={(e) => setPitchBend(Number(e.target.value))} 
+                onPointerUp={() => setPitchBend(8192)} onTouchEnd={() => setPitchBend(8192)} onMouseUp={() => setPitchBend(8192)} 
+                className="absolute w-12 h-6 opacity-0 cursor-ew-resize z-30" 
+                style={{ marginTop: '-24px' }}
+              />
             </div>
             
-            <div className="flex flex-col items-center justify-between w-8">
-              <span className="text-[8px] font-bold text-slate-500">MOD</span>
-              <div className="relative flex-1 w-6 bg-[#05080f] rounded-full border border-slate-700 overflow-hidden my-1">
+            <div className="h-px w-8 bg-slate-800 my-1" />
+
+            {/* Mod Wheel (Slider Vertical) */}
+            <div className="flex flex-col items-center flex-1 w-full relative">
+              <span className="text-[9px] font-bold text-slate-500 mb-1">MOD</span>
+              <div className="relative w-6 flex-1 bg-[#05080f] rounded-full border border-slate-700 overflow-hidden mb-1">
                 <div className="absolute bottom-0 w-full bg-gradient-to-t from-purple-900 to-purple-500" style={{ height: `${(modWheel / 127) * 100}%` }} />
               </div>
-              <input type="range" min="0" max="127" value={modWheel} onChange={(e) => setModWheel(Number(e.target.value))} className="absolute inset-0 w-full h-full opacity-0 cursor-ns-resize" style={{ WebkitAppearance: 'slider-vertical', writingMode: 'vertical-lr', direction: 'rtl' }} />
+              <input 
+                type="range" min="0" max="127" value={modWheel} 
+                onChange={(e) => setModWheel(Number(e.target.value))} 
+                className="absolute bottom-0 w-6 opacity-0 cursor-ns-resize z-30" 
+                style={{ height: 'calc(100% - 16px)', WebkitAppearance: 'slider-vertical', writingMode: 'vertical-lr', direction: 'rtl' }} 
+              />
+            </div>
+          </div>
+
+          {/* ÁREA DAS TECLAS */}
+          <div className="relative flex-1 flex flex-col">
+            {!isScrollLocked && (
+              <>
+                <button onClick={() => scrollKeyboard('left')} className="absolute left-1 top-1/2 -translate-y-1/2 z-40 p-2 bg-black/60 hover:bg-black/90 text-white rounded-full backdrop-blur-sm shadow-xl transition-all active:scale-95 border border-white/10"><ChevronLeft size={24} /></button>
+                <button onClick={() => scrollKeyboard('right')} className="absolute right-1 top-1/2 -translate-y-1/2 z-40 p-2 bg-black/60 hover:bg-black/90 text-white rounded-full backdrop-blur-sm shadow-xl transition-all active:scale-95 border border-white/10"><ChevronRight size={24} /></button>
+              </>
+            )}
+
+            <div ref={scrollViewportRef} className={`nexus-midi-viewport relative flex-1 ${isScrollLocked ? 'overflow-hidden' : 'overflow-x-auto overflow-y-hidden'}`} style={{ background: 'radial-gradient(ellipse at 50% 0%, rgba(30,41,59,0.72), rgba(2,6,23,0.98) 78%)', touchAction: isScrollLocked ? 'none' : 'pan-x', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}>
+              <div className="relative flex h-full items-stretch p-0.5" style={{ width: `${TOTAL_WHITE_KEYS * keyWidth}px`, minWidth: `${TOTAL_WHITE_KEYS * keyWidth}px`, marginInline: isScrollLocked ? 'auto' : undefined }}>{renderKeys()}</div>
             </div>
           </div>
 
