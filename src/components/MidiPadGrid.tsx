@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { ChevronDown, Settings, X, Check } from 'lucide-react';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 
@@ -14,7 +15,6 @@ interface MidiPadGridProps {
   isStageMode: boolean;
 }
 
-// CORREÇÃO: Definindo o Tipo do Pad para o TypeScript
 interface PadConfig {
   id: number;
   label: string;
@@ -56,7 +56,6 @@ export function MidiPadGrid({ isActive, onNoteOn, onNoteOff, onDisabledPress, se
   const [activePreset, setActivePreset] = useState<1 | 2>(1);
   const [pressedPads, setPressedPads] = useState<Set<number>>(() => new Set());
   
-  // CORREÇÃO: Tipando o useState como PadConfig[]
   const [pads, setPads] = useState<PadConfig[]>(() => {
     const saved = localStorage.getItem('nexus_custom_pads');
     return saved ? JSON.parse(saved) : DEFAULT_PADS;
@@ -197,8 +196,9 @@ export function MidiPadGrid({ isActive, onNoteOn, onNoteOff, onDisabledPress, se
         </div>
       </div>
 
-      {editingPadIndex !== null && (
-        <div className="fixed inset-0 z-[9999] bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
+      {/* CORREÇÃO: createPortal para o modal ficar acima de tudo, inclusive do Header */}
+      {editingPadIndex !== null && createPortal(
+        <div className="fixed inset-0 z-[99999] bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
           <div className="bg-[#0f172a] border border-slate-700 rounded-2xl p-5 w-full max-w-sm shadow-2xl">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-white font-bold text-sm">Editar Pad</h3>
@@ -225,7 +225,8 @@ export function MidiPadGrid({ isActive, onNoteOn, onNoteOff, onDisabledPress, se
               <button onClick={() => setEditingPadIndex(null)} className="mt-2 w-full py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-xl text-sm flex justify-center items-center gap-2"><Check size={16} /> Salvar Alterações</button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
