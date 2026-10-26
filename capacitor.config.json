@@ -1,21 +1,20 @@
-import { CapacitorConfig } from '@capacitor/cli';
-
-const config: CapacitorConfig = {
-  appId: 'com.rodolpho.tecladoepads.midi',
-  appName: 'Teclado e Pads',
-  webDir: 'dist',
-  android: {
-    allowMixedContent: false,
+{
+  "appId": "com.rodolpho.tecladoepads.midi",
+  "appName": "Teclado e Pads",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
   },
-  plugins: {
-    SplashScreen: {
-      launchShowDuration: 1500,
-      launchAutoHide: true,
-      backgroundColor: '#0a0e1a',
-      androidScaleType: 'CENTER_CROP',
-      showSpinner: false,
-    },
+  "android": {
+    "allowMixedContent": false
   },
-};
-
-export default config;
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 1500,
+      "launchAutoHide": true,
+      "backgroundColor": "#0a0e1a",
+      "androidScaleType": "CENTER_CROP",
+      "showSpinner": false
+    }
+  }
+}
