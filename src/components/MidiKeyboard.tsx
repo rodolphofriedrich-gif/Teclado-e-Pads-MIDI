@@ -216,7 +216,7 @@ export function MidiKeyboard({ isConnected, selectedChannel, onSelectChannel, se
         <div className={`relative flex-1 flex overflow-hidden ${isStageMode ? 'rounded-none border-0' : 'rounded-none border-x-0 border-y border-[#1e293b]'}`}>
           
           {/* PAINEL ESQUERDO (BEND E MOD) */}
-          <div className="flex flex-col gap-3 p-2 bg-[#0a0f1c] border-r border-slate-800 z-20 touch-none w-[70px] shrink-0 items-center shadow-[2px_0_10px_rgba(0,0,0,0.5)]" style={{ width: 'calc(70px + env(safe-area-inset-left, 0px))', paddingLeft: 'calc(0.5rem + env(safe-area-inset-left, 0px))' }}>
+          <div className="flex flex-col gap-3 p-2 bg-[#0a0f1c] border-r border-slate-800 z-20 touch-none w-[70px] shrink-0 items-center shadow-[2px_0_10px_rgba(0,0,0,0.5)]">
             <div className="flex flex-col items-center w-full">
               <span className="text-[9px] font-bold text-slate-400 mb-1 tracking-wider">P.BEND</span>
               <div className="relative w-full h-8 bg-[#05080f] rounded border border-slate-700 shadow-inner flex items-center overflow-hidden">
