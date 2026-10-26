@@ -5,10 +5,13 @@ import { midiManager } from './services/midiService';
 import { MidiKeyboard } from './components/MidiKeyboard';
 import { MidiPadGrid } from './components/MidiPadGrid';
 import { DestinationDropdown } from './components/DestinationDropdown';
+import { SamsungIAP, OperationMode } from '@gif-games/capacitor-samsung-iap';
 
 type AppTab = 'keyboard' | 'pads';
 type Toast = { message: string; type: 'info' | 'warn' | 'error' | 'success' };
 const VELOCITIES = [30, 64, 100, 127];
+
+const PRO_ITEM_ID = 'nexus_midi_pro'; // O ID que você vai criar no Samsung Seller Portal
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<AppTab>('keyboard');
@@ -17,6 +20,7 @@ export default function App() {
   // SISTEMA PRO
   const [isPro, setIsPro] = useState(() => localStorage.getItem('nexus_is_pro') === 'true');
   const [showPaywall, setShowPaywall] = useState(false);
+  const [isPurchasing, setIsPurchasing] = useState(false);
 
   const [keyboardChannel, setKeyboardChannel] = useState(1);
   const [keyboardVelocity, setKeyboardVelocity] = useState(() => {
@@ -47,6 +51,59 @@ export default function App() {
   useEffect(() => { if (!toast) return; const t = setTimeout(() => setToast(null), 3000); return () => clearTimeout(t); }, [toast]);
 
   const showToast = useCallback((message: string, type: Toast['type'] = 'info') => setToast({ message, type }), []);
+
+  // -------------------------------------------------------------------------
+  // LÓGICA DE IN-APP PURCHASE (SAMSUNG)
+  // -------------------------------------------------------------------------
+  useEffect(() => {
+    const initIAP = async () => {
+      try {
+        // Define o modo de operação. Use 'test' para testes e 'production' no lançamento.
+        await SamsungIAP.setOperationMode({ mode: 'test' });
+        
+        // Verifica se o usuário já comprou o item anteriormente
+        const ownedList = await SamsungIAP.getOwnedList({ productType: 'item' });
+        const hasPro = ownedList.data.some(item => item.mItemId === PRO_ITEM_ID);
+        
+        if (hasPro) {
+          setIsPro(true);
+          localStorage.setItem('nexus_is_pro', 'true');
+        }
+      } catch (error) {
+        console.error('Erro ao inicializar IAP Samsung:', error);
+      }
+    };
+    initIAP();
+  }, []);
+
+  const handleBuyPro = async () => {
+    if (isPurchasing) return;
+    setIsPurchasing(true);
+
+    try {
+      const purchase = await SamsungIAP.startPayment({
+        itemId: PRO_ITEM_ID,
+        passThroughParam: 'purchase_pro_from_app',
+      });
+
+      // Se chegou aqui, o pagamento foi bem-sucedido
+      if (purchase && purchase.mPurchaseId) {
+        setIsPro(true);
+        localStorage.setItem('nexus_is_pro', 'true');
+        setShowPaywall(false);
+        showToast('Versão PRO desbloqueada! Obrigado!', 'success');
+
+        // Opcional: Consumir o item (se for não-consumível, geralmente não precisa chamar consume)
+        // await SamsungIAP.consumePurchasedItems({ purchaseIds: [purchase.mPurchaseId] });
+      }
+    } catch (error: any) {
+      console.error('Erro na compra:', error);
+      showToast(error?.message || 'Falha ao processar a compra.', 'error');
+    } finally {
+      setIsPurchasing(false);
+    }
+  };
+  // -------------------------------------------------------------------------
 
   const handleTabChange = (tab: AppTab) => {
     if (tab === 'pads' && activeTab !== 'pads') setPadsChannel(10);
@@ -114,29 +171,15 @@ export default function App() {
     }
   };
 
-  // FUNÇÕES PRO
   const handlePanic = async () => {
     if (!isPro) { setShowPaywall(true); return; }
     const ch = tabRef.current === 'keyboard' ? kChRef.current : pChRef.current;
-    try {
-      await midiManager.sendPanic([ch]);
-      setIsSustainActive(false);
-      showToast('MIDI Panic enviado!', 'success');
-    } catch { showToast('Falha no Panic.', 'error'); }
+    try { await midiManager.sendPanic([ch]); setIsSustainActive(false); showToast('MIDI Panic enviado!', 'success'); } catch { showToast('Falha no Panic.', 'error'); }
   };
 
   const handleStageMode = () => {
     if (!isPro) { setShowPaywall(true); return; }
     setIsStageMode(true);
-  };
-
-  // SIMULAÇÃO DE COMPRA (Substituir pelo SDK da Samsung no futuro)
-  const handleBuyPro = () => {
-    // Aqui entrará a chamada nativa: SamsungIAP.purchase('nexus_pro')
-    localStorage.setItem('nexus_is_pro', 'true');
-    setIsPro(true);
-    setShowPaywall(false);
-    showToast('Versão PRO desbloqueada! Obrigado!', 'success');
   };
 
   const confirmExit = () => {
@@ -227,8 +270,8 @@ export default function App() {
               ))}
             </ul>
 
-            <button onClick={handleBuyPro} className="w-full py-4 bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-black font-black text-lg rounded-xl shadow-[0_0_20px_rgba(245,158,11,0.3)] transition-transform active:scale-95 flex items-center justify-center gap-2">
-              Comprar por R$ 19,90
+            <button onClick={handleBuyPro} disabled={isPurchasing} className="w-full py-4 bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-black font-black text-lg rounded-xl shadow-[0_0_20px_rgba(245,158,11,0.3)] transition-transform active:scale-95 flex items-center justify-center gap-2 disabled:opacity-70">
+              {isPurchasing ? 'Processando...' : 'Comprar por R$ 19,90'}
             </button>
 
             <button onClick={() => setShowPaywall(false)} className="w-full mt-4 py-2 text-xs font-bold text-slate-400 hover:text-white transition">
