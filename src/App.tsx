@@ -147,4 +147,38 @@ export default function App() {
       <main className="flex min-h-0 flex-1 flex-col overflow-hidden p-2 sm:p-3 pb-2">
         {activeTab === 'keyboard' && (
           <div className="flex min-h-0 flex-1 flex-col z-10 relative">
-            <MidiKeyboard isConnected={isConnected} selectedChannel={keyboardChannel} onSelectChannel={setKeyboardChannel} selectedVelocity
+            <MidiKeyboard isConnected={isConnected} selectedChannel={keyboardChannel} onSelectChannel={setKeyboardChannel} selectedVelocity={keyboardVelocity} onSelectVelocity={setKeyboardVelocity} onNoteOn={handleNoteOn} onNoteOff={handleNoteOff} onDisabledPress={handleDisabledPress} customWhiteKeyColor="#f8fafc" customBlackKeyColor="#172033" isActive={isActive} onToggleActive={() => setIsActive((v) => !v)} isSustainActive={isSustainActive} onToggleSustain={() => void toggleSustain()} />
+          </div>
+        )}
+        
+        {activeTab === 'pads' && (
+          <div className="flex min-h-0 flex-1 flex-col z-10 relative">
+            <MidiPadGrid isActive={isActive} onNoteOn={handleNoteOn} onNoteOff={handleNoteOff} onDisabledPress={handleDisabledPress} selectedChannel={padsChannel} onSelectChannel={setPadsChannel} selectedVelocity={padsVelocity} onSelectVelocity={setPadsVelocity} />
+          </div>
+        )}
+      </main>
+
+      {showExitConfirm && (
+        <div className="fixed inset-0 nexus-modal-backdrop flex items-center justify-center p-4 z-[9999]">
+          <div className="nexus-modal w-full max-w-sm rounded-2xl p-5 shadow-2xl">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="nexus-modal-icon flex h-10 w-10 items-center justify-center rounded-full"><AlertTriangle size={20} /></div>
+              <h2 className="text-base font-bold text-white">Fechar Aplicativo</h2>
+            </div>
+            <p className="text-sm text-slate-300 mb-6">Deseja realmente fechar o aplicativo? Certifique-se de ter salvo suas configurações.</p>
+            <div className="flex justify-end gap-3">
+              <button onClick={() => setShowExitConfirm(false)} className="rounded-xl px-4 py-2 text-xs font-bold text-slate-300 bg-slate-800 hover:bg-slate-700 transition-colors">Cancelar</button>
+              <button onClick={confirmExit} className="rounded-xl px-4 py-2 text-xs font-bold text-white bg-rose-600 hover:bg-rose-500 shadow-md shadow-rose-900/50 transition-colors">Sim, Sair</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {toast && (
+        <button type="button" onClick={() => setToast(null)} className={`absolute left-3 right-3 top-16 z-[999] rounded-xl border px-4 py-3 text-left text-xs shadow-2xl ${toast.type === 'error' ? 'border-rose-800/60 bg-rose-950/95 text-rose-200' : toast.type === 'warn' ? 'border-amber-800/60 bg-amber-950/95 text-amber-200' : toast.type === 'success' ? 'border-emerald-800/60 bg-emerald-950/95 text-emerald-200' : 'border-slate-700 bg-slate-900/95 text-slate-200'}`}>
+          {toast.message} <span className="ml-2 opacity-70">×</span>
+        </button>
+      )}
+    </div>
+  );
+}
