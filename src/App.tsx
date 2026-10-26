@@ -42,14 +42,11 @@ export default function App() {
   useEffect(() => { pVRef.current = padsVelocity; localStorage.setItem('nexus_pads_velocity', String(padsVelocity)); }, [padsVelocity]);
   useEffect(() => { tabRef.current = activeTab; }, [activeTab]);
   useEffect(() => { if (!toast) return; const t = setTimeout(() => setToast(null), 3000); return () => clearTimeout(t); }, [toast]);
-  useEffect(() => { if (isStageMode) {
-    // No modo palco, esconde a barra de status
+
+  // ESCONDE A BARRA DE STATUS DEFINITIVAMENTE
+  useEffect(() => {
     StatusBar.hide().catch(() => {});
-  } else {
-    // No modo normal, mostra a barra de status novamente
-    StatusBar.show().catch(() => {});
-  }
-}, [isStageMode]);
+  }, []);
 
   const showToast = useCallback((message: string, type: Toast['type'] = 'info') => setToast({ message, type }), []);
 
@@ -132,11 +129,10 @@ export default function App() {
   const isConnected = Boolean(connectedDestination);
 
   return (
-    // REMOVIDO pt-[env(...)] e pb-[env(...)] AQUI para o fundo preto cobrir tudo
     <div className="nexus-app fixed inset-0 flex h-[100dvh] w-full flex-col overflow-hidden font-sans antialiased select-none bg-[#0a0f1c]">
       
       {!isStageMode && (
-        // ADICIONADO pt-[env(safe-area-inset-top)] AQUI para o notch não cobrir os botões
+        // O padding-top foi mantido apenas no cabeçalho para o notch não cobrir os botões
         <header className="nexus-header z-50 flex min-h-[56px] shrink-0 items-center justify-between gap-2 px-3 sm:px-5 pt-[env(safe-area-inset-top)] border-b border-white/5 bg-[#0a0f1c]">
           <div className="flex min-w-0 items-center gap-2 shrink-0">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-cyan-400/25 bg-cyan-400/10 text-cyan-300"><Music2 size={20} /></div>
@@ -168,20 +164,20 @@ export default function App() {
         </header>
       )}
 
-      {/* ADICIONADO pb-[env(safe-area-inset-bottom)] AQUI para o teclado não ficar atrás do botão de voltar do Android */}
-      <main className={`flex min-h-0 flex-1 flex-col overflow-hidden pb-[env(safe-area-inset-bottom)] ${isStageMode ? 'p-0' : 'p-2 sm:p-3 pb-2'}`}>
+      {/* REMOVIDO O PADDING LATERAL (p-2) E MANTIDO O INFERIOR (pb) */}
+      <main className={`flex min-h-0 flex-1 flex-col overflow-hidden pb-[env(safe-area-inset-bottom)] ${isStageMode ? 'p-0' : 'p-0 pt-2 sm:pt-3'}`}>
         {isStageMode && (
           <button onClick={() => setIsStageMode(false)} className="absolute top-[calc(env(safe-area-inset-top)+16px)] right-4 z-[9999] p-3 bg-black/60 hover:bg-black/90 rounded-full text-white backdrop-blur-md border border-white/20 shadow-xl"><Minimize size={24} /></button>
         )}
 
         {activeTab === 'keyboard' && (
-          <div className="flex min-h-0 flex-1 flex-col z-10 relative">
+          <div className="flex min-h-0 flex-1 flex-col z-10 relative px-1 sm:px-2">
             <MidiKeyboard isConnected={isConnected} selectedChannel={keyboardChannel} onSelectChannel={setKeyboardChannel} selectedVelocity={keyboardVelocity} onSelectVelocity={setKeyboardVelocity} onNoteOn={handleNoteOn} onNoteOff={handleNoteOff} onDisabledPress={handleDisabledPress} customWhiteKeyColor="#f8fafc" customBlackKeyColor="#172033" isActive={isActive} onToggleActive={() => setIsActive((v) => !v)} isSustainActive={isSustainActive} onToggleSustain={() => void toggleSustain()} isStageMode={isStageMode} />
           </div>
         )}
         
         {activeTab === 'pads' && (
-          <div className="flex min-h-0 flex-1 flex-col z-10 relative">
+          <div className="flex min-h-0 flex-1 flex-col z-10 relative px-1 sm:px-2">
             <MidiPadGrid isActive={isActive} onNoteOn={handleNoteOn} onNoteOff={handleNoteOff} onDisabledPress={handleDisabledPress} selectedChannel={padsChannel} onSelectChannel={setPadsChannel} selectedVelocity={padsVelocity} onSelectVelocity={setPadsVelocity} isStageMode={isStageMode} />
           </div>
         )}
