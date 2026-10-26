@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ChevronDown, Power, Pause, SlidersHorizontal, Maximize, MoveHorizontal, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronDown, Power, Pause, SlidersHorizontal, Maximize, MoveHorizontal, ChevronLeft, ChevronRight, Lock } from 'lucide-react';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
+import { midiManager } from '../services/midiService';
 
 interface MidiKeyboardProps {
   isConnected: boolean;
@@ -17,6 +18,9 @@ interface MidiKeyboardProps {
   onToggleActive: () => void;
   isSustainActive: boolean;
   onToggleSustain: () => void;
+  isStageMode: boolean;
+  isPro: boolean;
+  onRequestPro: () => void;
 }
 
 const OCTAVE_NOTES = [
@@ -28,23 +32,31 @@ const OCTAVE_NOTES = [
 
 const TOTAL_WHITE_KEYS = 14, MIN_KEY_WIDTH = 35, MAX_KEY_WIDTH = 95;
 const VELOCITIES = [30, 64, 100, 127];
-
 type OpenDropdown = 'velocity' | 'channel' | 'settings' | null;
 
-export function MidiKeyboard({ isConnected, selectedChannel, onSelectChannel, selectedVelocity, onSelectVelocity, onNoteOn, onNoteOff, onDisabledPress, customWhiteKeyColor, customBlackKeyColor, isActive, onToggleActive, isSustainActive, onToggleSustain }: MidiKeyboardProps) {
+export function MidiKeyboard({ isConnected, selectedChannel, onSelectChannel, selectedVelocity, onSelectVelocity, onNoteOn, onNoteOff, onDisabledPress, customWhiteKeyColor, customBlackKeyColor, isActive, onToggleActive, isSustainActive, onToggleSustain, isStageMode, isPro, onRequestPro }: MidiKeyboardProps) {
   const [startOctave, setStartOctave] = useState(() => Number(localStorage.getItem('nexus_key_octave')) || 3);
   const [keyWidth, setKeyWidth] = useState(() => Number(localStorage.getItem('nexus_key_width')) || 60);
   const [isScrollLocked, setIsScrollLocked] = useState(() => localStorage.getItem('nexus_key_scroll') === 'true');
   const [minKeyWidth, setMinKeyWidth] = useState(MIN_KEY_WIDTH);
   const [pressedNotes, setPressedNotes] = useState<Set<number>>(() => new Set());
   
-  // CORREÇÃO: Apenas um dropdown pode estar aberto por vez
-  const [activeDropdown, setActiveDropdown] = useState<OpenDropdown>(null);
+  const [pitchBend, setPitchBend] = useState(8192);
+  const [modWheel, setModWheel] = useState(0);
 
+  const [activeDropdown, setActiveDropdown] = useState<OpenDropdown>(null);
   const settingsRef = useRef<HTMLDivElement>(null), channelDropdownRef = useRef<HTMLDivElement>(null), velocityDropdownRef = useRef<HTMLDivElement>(null);
   const scrollViewportRef = useRef<HTMLDivElement>(null), containerRef = useRef<HTMLDivElement>(null);
   const activeNotesRef = useRef<Set<number>>(new Set()), activePointersRef = useRef<Map<number, number>>(new Map());
   const onNoteOffRef = useRef(onNoteOff), onDisabledPressRef = useRef(onDisabledPress);
+
+  useEffect(() => {
+    if (isConnected && isPro) midiManager.sendPitchBend(selectedChannel, pitchBend).catch(() => {});
+  }, [pitchBend, selectedChannel, isConnected, isPro]);
+
+  useEffect(() => {
+    if (isConnected && isPro) midiManager.sendControlChange(selectedChannel, 1, modWheel).catch(() => {});
+  }, [modWheel, selectedChannel, isConnected, isPro]);
 
   useEffect(() => { localStorage.setItem('nexus_key_octave', String(startOctave)); localStorage.setItem('nexus_key_width', String(keyWidth)); localStorage.setItem('nexus_key_scroll', String(isScrollLocked)); }, [startOctave, keyWidth, isScrollLocked]);
   useEffect(() => { onNoteOffRef.current = onNoteOff; }, [onNoteOff]);
@@ -53,14 +65,7 @@ export function MidiKeyboard({ isConnected, selectedChannel, onSelectChannel, se
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Node;
-      const inVelocity = velocityDropdownRef.current?.contains(target);
-      const inChannel = channelDropdownRef.current?.contains(target);
-      const inSettings = settingsRef.current?.contains(target);
-
-      // Se o clique não foi em nenhum dos menus, fecha todos
-      if (!inVelocity && !inChannel && !inSettings) {
-        setActiveDropdown(null);
-      }
+      if (!velocityDropdownRef.current?.contains(target) && !channelDropdownRef.current?.contains(target) && !settingsRef.current?.contains(target)) setActiveDropdown(null);
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -148,93 +153,104 @@ export function MidiKeyboard({ isConnected, selectedChannel, onSelectChannel, se
   };
 
   return (
-    <section className="nexus-midi-keyboard flex min-h-0 w-full flex-1 flex-col gap-1 rounded-2xl border p-1 sm:p-1.5" style={{ background: 'linear-gradient(145deg, rgba(17,24,39,0.98), rgba(8,13,25,0.99))', borderColor: 'rgba(148,163,184,0.16)', boxShadow: '0 18px 50px rgba(0,0,0,0.24), inset 0 1px 0 rgba(255,255,255,0.035)' }}>
+    <section className={`nexus-midi-keyboard flex min-h-0 w-full flex-1 flex-col gap-1 ${isStageMode ? 'rounded-none border-0 p-0' : 'rounded-2xl border p-1 sm:p-1.5'}`} style={{ background: isStageMode ? '#000' : 'linear-gradient(145deg, rgba(17,24,39,0.98), rgba(8,13,25,0.99))', borderColor: 'rgba(148,163,184,0.16)' }}>
       
-      <div className="nexus-midi-controls relative z-[100] flex shrink-0 flex-wrap items-center justify-between gap-2 rounded-xl border px-2 py-1.5 sm:px-3" style={{ background: 'rgba(5,10,22,0.76)', borderColor: 'rgba(148,163,184,0.14)' }}>
-        
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-          <button type="button" onClick={onToggleActive} className={`flex h-9 items-center justify-center gap-1.5 rounded-lg border px-3 text-[11px] font-bold transition-all ${isActive ? 'border-cyan-700/50 bg-cyan-900/30 text-cyan-400' : 'border-slate-700 bg-slate-800/50 text-slate-500'}`}><Power size={15} /><span className="hidden sm:inline">{isActive ? 'LIG' : 'DESL'}</span></button>
-          <button type="button" onClick={onToggleSustain} className={`flex h-9 items-center justify-center gap-1.5 rounded-lg border px-3 text-[11px] font-bold transition-all ${isSustainActive ? 'border-amber-500/50 bg-amber-900/30 text-amber-400' : 'border-slate-700 bg-slate-800/50 text-slate-400'}`}><Pause size={15} /><span className="hidden sm:inline">PEDAL</span></button>
-          
-          <div className="flex items-center gap-1.5">
-            <div className="flex items-center overflow-hidden rounded-lg border" style={{ background: '#0f172a', borderColor: 'rgba(148,163,184,0.2)' }}>
-              <button type="button" disabled={startOctave <= 1} onClick={() => setStartOctave((v) => Math.max(1, v - 1))} className="flex h-9 w-8 items-center justify-center text-lg font-semibold text-slate-300 transition hover:bg-slate-700 hover:text-white disabled:opacity-35">−</button>
-              <span className="min-w-[32px] text-center font-mono text-xs font-bold text-cyan-300">C{startOctave}</span>
-              <button type="button" disabled={startOctave >= 6} onClick={() => setStartOctave((v) => Math.min(6, v + 1))} className="flex h-9 w-8 items-center justify-center text-lg font-semibold text-slate-300 transition hover:bg-slate-700 hover:text-white disabled:opacity-35">+</button>
+      {!isStageMode && (
+        <div className="nexus-midi-controls relative z-[100] flex shrink-0 flex-wrap items-center justify-between gap-2 rounded-xl border px-2 py-1.5 sm:px-3" style={{ background: 'rgba(5,10,22,0.76)', borderColor: 'rgba(148,163,184,0.14)' }}>
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            <button type="button" onClick={onToggleActive} className={`flex h-9 items-center justify-center gap-1.5 rounded-lg border px-3 text-[11px] font-bold transition-all ${isActive ? 'border-cyan-700/50 bg-cyan-900/30 text-cyan-400' : 'border-slate-700 bg-slate-800/50 text-slate-500'}`}><Power size={15} /><span className="hidden sm:inline">{isActive ? 'LIG' : 'DESL'}</span></button>
+            <button type="button" onClick={onToggleSustain} className={`flex h-9 items-center justify-center gap-1.5 rounded-lg border px-3 text-[11px] font-bold transition-all ${isSustainActive ? 'border-amber-500/50 bg-amber-900/30 text-amber-400' : 'border-slate-700 bg-slate-800/50 text-slate-400'}`}><Pause size={15} /><span className="hidden sm:inline">PEDAL</span></button>
+            
+            <div className="flex items-center gap-1.5">
+              <div className="flex items-center overflow-hidden rounded-lg border" style={{ background: '#0f172a', borderColor: 'rgba(148,163,184,0.2)' }}>
+                <button type="button" disabled={startOctave <= 1} onClick={() => setStartOctave((v) => Math.max(1, v - 1))} className="flex h-9 w-8 items-center justify-center text-lg font-semibold text-slate-300 transition hover:bg-slate-700 hover:text-white disabled:opacity-35">−</button>
+                <span className="min-w-[32px] text-center font-mono text-xs font-bold text-cyan-300">C{startOctave}</span>
+                <button type="button" disabled={startOctave >= 6} onClick={() => setStartOctave((v) => Math.min(6, v + 1))} className="flex h-9 w-8 items-center justify-center text-lg font-semibold text-slate-300 transition hover:bg-slate-700 hover:text-white disabled:opacity-35">+</button>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="flex flex-1 items-center justify-end gap-2" ref={settingsRef}>
-          
-          <div className="relative" ref={velocityDropdownRef}>
-            <button type="button" onClick={() => setActiveDropdown(activeDropdown === 'velocity' ? null : 'velocity')} className="flex h-9 items-center gap-2 rounded-lg border border-slate-700 bg-[#0f172a] px-3 transition hover:bg-slate-800 text-slate-400">
-              <span className="text-[10px] font-bold uppercase hidden sm:inline">Velocity</span>
-              <span className="font-mono text-xs font-bold text-slate-200">{selectedVelocity}</span>
-              <ChevronDown size={12} />
-            </button>
-            {activeDropdown === 'velocity' && (
-              <div className="absolute top-full right-0 z-[999] mt-2 w-32 overflow-y-auto rounded-xl border border-slate-700 bg-[#0f172a] shadow-2xl custom-scrollbar">
-                <div className="flex flex-col gap-0.5 p-1">
-                  {VELOCITIES.map((v) => (
-                    <button key={v} type="button" onClick={() => { onSelectVelocity(v); setActiveDropdown(null); }} className={`justify-center py-2 text-[11px] rounded transition-colors ${selectedVelocity === v ? 'bg-cyan-900/50 text-cyan-300 font-bold' : 'text-slate-300 hover:bg-slate-800'}`}>
-                      {v} {v === 30 ? 'Suave' : v === 64 ? 'Méd' : v === 100 ? 'Forte' : 'Máx'}
-                    </button>
-                  ))}
+          <div className="flex flex-1 items-center justify-end gap-2" ref={settingsRef}>
+            <div className="relative" ref={velocityDropdownRef}>
+              <button type="button" onClick={() => setActiveDropdown(activeDropdown === 'velocity' ? null : 'velocity')} className="flex h-9 items-center gap-2 rounded-lg border border-slate-700 bg-[#0f172a] px-3 transition hover:bg-slate-800 text-slate-400"><span className="text-[10px] font-bold uppercase hidden sm:inline">Velocity</span><span className="font-mono text-xs font-bold text-slate-200">{selectedVelocity}</span><ChevronDown size={12} /></button>
+              {activeDropdown === 'velocity' && (
+                <div className="absolute top-full right-0 z-[999] mt-2 w-32 overflow-y-auto rounded-xl border border-slate-700 bg-[#0f172a] shadow-2xl custom-scrollbar">
+                  <div className="flex flex-col gap-0.5 p-1">
+                    {VELOCITIES.map((v) => (<button key={v} type="button" onClick={() => { onSelectVelocity(v); setActiveDropdown(null); }} className={`justify-center py-2 text-[11px] rounded transition-colors ${selectedVelocity === v ? 'bg-cyan-900/50 text-cyan-300 font-bold' : 'text-slate-300 hover:bg-slate-800'}`}>{v} {v === 30 ? 'Suave' : v === 64 ? 'Méd' : v === 100 ? 'Forte' : 'Máx'}</button>))}
+                  </div>
                 </div>
+              )}
+            </div>
+            <div className="relative" ref={channelDropdownRef}>
+              <button type="button" onClick={() => setActiveDropdown(activeDropdown === 'channel' ? null : 'channel')} className="flex h-9 items-center gap-1.5 rounded-lg border border-[#1e293b] bg-[#0f172a] px-2.5 transition hover:bg-slate-800 text-slate-400"><span className="text-[10px] font-bold uppercase hidden sm:inline">Canal</span><span className="min-w-[16px] text-center font-mono text-xs font-bold text-cyan-300">{String(selectedChannel).padStart(2, '0')}</span><ChevronDown size={12} /></button>
+              {activeDropdown === 'channel' && (
+                <div className="absolute top-full right-0 z-[999] mt-2 max-h-48 w-24 overflow-y-auto rounded-xl border border-slate-700 bg-[#0f172a] shadow-2xl custom-scrollbar">
+                  <div className="nexus-dropdown-list flex flex-col gap-0.5 p-1">
+                    {Array.from({ length: 16 }, (_, i) => (<button key={i + 1} type="button" onClick={() => { onSelectChannel(i + 1); setActiveDropdown(null); }} className={`justify-center py-2 font-mono text-xs rounded transition-colors ${selectedChannel === i + 1 ? 'bg-cyan-900/50 text-cyan-300 font-bold' : 'text-slate-300 hover:bg-slate-800'}`}>{String(i + 1).padStart(2, '0')}</button>))}
+                  </div>
+                </div>
+              )}
+            </div>
+            <button type="button" onClick={() => setActiveDropdown(activeDropdown === 'settings' ? null : 'settings')} className={`flex h-9 w-9 items-center justify-center rounded-lg border transition-colors ${activeDropdown === 'settings' ? 'bg-slate-700 border-slate-600 text-white' : 'bg-[#0f172a] border-[#1e293b] text-slate-400 hover:text-slate-200'}`}><SlidersHorizontal size={16} /></button>
+            {activeDropdown === 'settings' && (
+              <div className="absolute top-full right-0 z-[999] mt-2 w-64 rounded-xl border border-slate-700 bg-[#0f172a] p-3 shadow-2xl flex flex-col gap-4">
+                <div>
+                  <label className="flex items-center justify-between text-[10px] font-bold uppercase text-slate-400 mb-2"><span>Zoom do Teclado</span><span className="font-mono text-cyan-300">{keyWidth}px</span></label>
+                  <input type="range" min={minKeyWidth} max={MAX_KEY_WIDTH} value={keyWidth} onChange={(e) => setKeyWidth(Number(e.target.value))} className="h-1.5 w-full cursor-pointer accent-cyan-400" />
+                </div>
+                <div className="h-px w-full bg-slate-800" />
+                <button type="button" onClick={() => setIsScrollLocked(!isScrollLocked)} className={`flex items-center justify-between w-full p-2 rounded-lg border transition-colors ${isScrollLocked ? 'bg-amber-900/20 border-amber-700/50 text-amber-400' : 'bg-[#0a0f1c] border-slate-800 text-slate-400'}`}>
+                  <span className="text-xs font-bold flex items-center gap-2">{isScrollLocked ? <Maximize size={14} /> : <MoveHorizontal size={14} />} {isScrollLocked ? 'Tela Fixa' : 'Rolagem Livre'}</span>
+                  <div className={`w-8 h-4 rounded-full transition-colors relative ${isScrollLocked ? 'bg-amber-500' : 'bg-slate-700'}`}><div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all ${isScrollLocked ? 'left-4' : 'left-0.5'}`} /></div>
+                </button>
               </div>
             )}
           </div>
-
-          <div className="relative" ref={channelDropdownRef}>
-            <button type="button" onClick={() => setActiveDropdown(activeDropdown === 'channel' ? null : 'channel')} className="flex h-9 items-center gap-1.5 rounded-lg border border-[#1e293b] bg-[#0f172a] px-2.5 transition hover:bg-slate-800 text-slate-400">
-              <span className="text-[10px] font-bold uppercase hidden sm:inline">Canal</span>
-              <span className="min-w-[16px] text-center font-mono text-xs font-bold text-cyan-300">{String(selectedChannel).padStart(2, '0')}</span>
-              <ChevronDown size={12} />
-            </button>
-            {activeDropdown === 'channel' && (
-              <div className="absolute top-full right-0 z-[999] mt-2 max-h-48 w-24 overflow-y-auto rounded-xl border border-slate-700 bg-[#0f172a] shadow-2xl custom-scrollbar">
-                <div className="nexus-dropdown-list flex flex-col gap-0.5 p-1">
-                  {Array.from({ length: 16 }, (_, i) => (
-                    <button key={i + 1} type="button" onClick={() => { onSelectChannel(i + 1); setActiveDropdown(null); }} className={`justify-center py-2 font-mono text-xs rounded transition-colors ${selectedChannel === i + 1 ? 'bg-cyan-900/50 text-cyan-300 font-bold' : 'text-slate-300 hover:bg-slate-800'}`}>
-                      {String(i + 1).padStart(2, '0')}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-
-          <button type="button" onClick={() => setActiveDropdown(activeDropdown === 'settings' ? null : 'settings')} className={`flex h-9 w-9 items-center justify-center rounded-lg border transition-colors ${activeDropdown === 'settings' ? 'bg-slate-700 border-slate-600 text-white' : 'bg-[#0f172a] border-[#1e293b] text-slate-400 hover:text-slate-200'}`}><SlidersHorizontal size={16} /></button>
-          
-          {activeDropdown === 'settings' && (
-            <div className="absolute top-full right-0 z-[999] mt-2 w-64 rounded-xl border border-slate-700 bg-[#0f172a] p-3 shadow-2xl flex flex-col gap-4">
-              <div>
-                <label className="flex items-center justify-between text-[10px] font-bold uppercase text-slate-400 mb-2"><span>Zoom do Teclado</span><span className="font-mono text-cyan-300">{keyWidth}px</span></label>
-                <input type="range" min={minKeyWidth} max={MAX_KEY_WIDTH} value={keyWidth} onChange={(e) => setKeyWidth(Number(e.target.value))} className="h-1.5 w-full cursor-pointer accent-cyan-400" />
-              </div>
-              <div className="h-px w-full bg-slate-800" />
-              <button type="button" onClick={() => setIsScrollLocked(!isScrollLocked)} className={`flex items-center justify-between w-full p-2 rounded-lg border transition-colors ${isScrollLocked ? 'bg-amber-900/20 border-amber-700/50 text-amber-400' : 'bg-[#0a0f1c] border-slate-800 text-slate-400'}`}>
-                <span className="text-xs font-bold flex items-center gap-2">{isScrollLocked ? <Maximize size={14} /> : <MoveHorizontal size={14} />} {isScrollLocked ? 'Tela Fixa' : 'Rolagem Livre'}</span>
-                <div className={`w-8 h-4 rounded-full transition-colors relative ${isScrollLocked ? 'bg-amber-500' : 'bg-slate-700'}`}><div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all ${isScrollLocked ? 'left-4' : 'left-0.5'}`} /></div>
-              </button>
-            </div>
-          )}
         </div>
-
-      </div>
+      )}
 
       <div ref={containerRef} className="flex-1 min-h-0 relative z-0 flex flex-col">
-        <div className="relative flex-1 flex overflow-hidden rounded-xl border border-[#1e293b]">
+        <div className={`relative flex-1 flex overflow-hidden ${isStageMode ? 'rounded-none border-0' : 'rounded-xl border border-[#1e293b]'}`}>
+          
           {!isScrollLocked && (
             <>
               <button onClick={() => scrollKeyboard('left')} className="absolute left-1 top-1/2 -translate-y-1/2 z-40 p-2 bg-black/60 hover:bg-black/90 text-white rounded-full backdrop-blur-sm shadow-xl transition-all active:scale-95 border border-white/10"><ChevronLeft size={24} /></button>
               <button onClick={() => scrollKeyboard('right')} className="absolute right-1 top-1/2 -translate-y-1/2 z-40 p-2 bg-black/60 hover:bg-black/90 text-white rounded-full backdrop-blur-sm shadow-xl transition-all active:scale-95 border border-white/10"><ChevronRight size={24} /></button>
             </>
           )}
+
           <div ref={scrollViewportRef} className={`nexus-midi-viewport relative flex-1 ${isScrollLocked ? 'overflow-hidden' : 'overflow-x-auto overflow-y-hidden'}`} style={{ background: 'radial-gradient(ellipse at 50% 0%, rgba(30,41,59,0.72), rgba(2,6,23,0.98) 78%)', touchAction: isScrollLocked ? 'none' : 'pan-x', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}>
             <div className="relative flex h-full items-stretch p-0.5" style={{ width: `${TOTAL_WHITE_KEYS * keyWidth}px`, minWidth: `${TOTAL_WHITE_KEYS * keyWidth}px`, marginInline: isScrollLocked ? 'auto' : undefined }}>{renderKeys()}</div>
           </div>
+
+          {/* CONTROLES DE PERFORMANCE PRO (PITCH BEND E MOD WHEEL) */}
+          <div className="flex flex-row items-stretch gap-1 px-1 py-2 bg-[#0a0f1c] border-l border-slate-800 z-20 touch-none relative">
+            
+            {!isPro && (
+              <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-30 flex flex-col items-center justify-center cursor-pointer" onClick={onRequestPro}>
+                <Lock size={16} className="text-amber-500 mb-1" />
+                <span className="text-[8px] font-bold text-amber-500 uppercase tracking-wider">PRO</span>
+              </div>
+            )}
+
+            <div className="flex flex-col items-center justify-between w-8">
+              <span className="text-[8px] font-bold text-slate-500">P.BEND</span>
+              <div className="relative flex-1 w-6 bg-[#05080f] rounded-full border border-slate-700 overflow-hidden my-1">
+                <div className="absolute w-full bg-gradient-to-t from-cyan-900 to-cyan-500" style={{ bottom: '50%', height: `${((pitchBend - 8192) / 8192) * 50}%` }} />
+                <div className="absolute w-full bg-gradient-to-b from-cyan-900 to-cyan-500" style={{ top: '50%', height: `${((8192 - pitchBend) / 8192) * 50}%` }} />
+              </div>
+              <input type="range" min="0" max="16383" value={pitchBend} onChange={(e) => setPitchBend(Number(e.target.value))} onPointerUp={() => setPitchBend(8192)} onTouchEnd={() => setPitchBend(8192)} onMouseUp={() => setPitchBend(8192)} className="absolute inset-0 w-full h-full opacity-0 cursor-ns-resize" style={{ WebkitAppearance: 'slider-vertical', writingMode: 'vertical-lr', direction: 'rtl' }} />
+            </div>
+            
+            <div className="flex flex-col items-center justify-between w-8">
+              <span className="text-[8px] font-bold text-slate-500">MOD</span>
+              <div className="relative flex-1 w-6 bg-[#05080f] rounded-full border border-slate-700 overflow-hidden my-1">
+                <div className="absolute bottom-0 w-full bg-gradient-to-t from-purple-900 to-purple-500" style={{ height: `${(modWheel / 127) * 100}%` }} />
+              </div>
+              <input type="range" min="0" max="127" value={modWheel} onChange={(e) => setModWheel(Number(e.target.value))} className="absolute inset-0 w-full h-full opacity-0 cursor-ns-resize" style={{ WebkitAppearance: 'slider-vertical', writingMode: 'vertical-lr', direction: 'rtl' }} />
+            </div>
+          </div>
+
         </div>
       </div>
     </section>
