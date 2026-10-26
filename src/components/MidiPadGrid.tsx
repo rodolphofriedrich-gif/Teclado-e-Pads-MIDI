@@ -109,31 +109,41 @@ export function MidiPadGrid({ isActive, onNoteOn, onNoteOff, onDisabledPress, se
           <button onClick={() => setActivePreset(2)} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${activePreset === 2 ? 'bg-cyan-600 text-white shadow-md' : 'text-slate-400 hover:bg-slate-800'}`}>Preset 2</button>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <div ref={velocityRef} className="relative">
-            <button type="button" onClick={() => setIsVelocityOpen(!isVelocityOpen)} className="flex h-8 items-center gap-1.5 rounded bg-[#0a0f1c] border border-slate-700 px-2 text-[11px] text-slate-200 hover:bg-slate-800">
-              <span className="text-[10px] font-bold uppercase hidden sm:inline text-slate-400">Velocity</span>
-              <span className="font-mono font-bold">{selectedVelocity}</span><ChevronDown size={12} />
+            <button type="button" onClick={() => setIsVelocityOpen(!isVelocityOpen)} className="flex h-9 items-center gap-2 rounded-lg border border-slate-700 bg-[#0f172a] px-3 transition hover:bg-slate-800 text-slate-400">
+              <span className="text-[10px] font-bold uppercase hidden sm:inline">Velocity</span>
+              <span className="font-mono text-xs font-bold text-slate-200">{selectedVelocity}</span>
+              <ChevronDown size={12} />
             </button>
             {isVelocityOpen && (
-              <div className="absolute right-0 top-full z-[999] mt-1 w-24 overflow-y-auto rounded-lg border border-slate-700 bg-[#0f172a] shadow-xl custom-scrollbar">
-                {VELOCITIES.map((v) => (
-                  <button key={v} onClick={() => { onSelectVelocity(v); setIsVelocityOpen(false); }} className={`w-full text-left px-2 py-2 text-xs ${selectedVelocity === v ? 'bg-cyan-900/50 text-cyan-300 font-bold' : 'text-slate-300 hover:bg-slate-800'}`}>{v}</button>
-                ))}
+              <div className="absolute right-0 top-full z-[999] mt-2 w-32 overflow-y-auto rounded-xl border border-slate-700 bg-[#0f172a] shadow-2xl custom-scrollbar">
+                <div className="flex flex-col gap-0.5 p-1">
+                  {VELOCITIES.map((v) => (
+                    <button key={v} type="button" onClick={() => { onSelectVelocity(v); setIsVelocityOpen(false); }} className={`justify-center py-2 text-[11px] rounded transition-colors ${selectedVelocity === v ? 'bg-cyan-900/50 text-cyan-300 font-bold' : 'text-slate-300 hover:bg-slate-800'}`}>
+                      {v} {v === 30 ? 'Suave' : v === 64 ? 'Méd' : v === 100 ? 'Forte' : 'Máx'}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
           </div>
 
           <div ref={channelRef} className="relative">
-            <button type="button" onClick={() => setIsChannelOpen(!isChannelOpen)} className="flex h-8 items-center gap-1.5 rounded bg-[#0a0f1c] border border-slate-700 px-2 text-[11px] text-slate-200 hover:bg-slate-800">
-              <span className="text-[10px] font-bold uppercase hidden sm:inline text-slate-400">Canal</span>
-              <span className="font-mono font-bold">{String(selectedChannel).padStart(2, '0')}</span><ChevronDown size={12} />
+            <button type="button" onClick={() => setIsChannelOpen(!isChannelOpen)} className="flex h-9 items-center gap-1.5 rounded-lg border border-[#1e293b] bg-[#0f172a] px-2.5 transition hover:bg-slate-800 text-slate-400">
+              <span className="text-[10px] font-bold uppercase hidden sm:inline">Canal</span>
+              <span className="min-w-[16px] text-center font-mono text-xs font-bold text-cyan-300">{String(selectedChannel).padStart(2, '0')}</span>
+              <ChevronDown size={12} />
             </button>
             {isChannelOpen && (
-              <div className="absolute right-0 top-full z-[999] mt-1 w-20 overflow-y-auto max-h-48 rounded-lg border border-slate-700 bg-[#0f172a] shadow-xl custom-scrollbar">
-                {Array.from({ length: 16 }, (_, i) => i + 1).map((ch) => (
-                  <button key={ch} onClick={() => { onSelectChannel(ch); setIsChannelOpen(false); }} className={`w-full text-left px-2 py-2 text-xs font-mono ${selectedChannel === ch ? 'bg-cyan-900/50 text-cyan-300 font-bold' : 'text-slate-300 hover:bg-slate-800'}`}>{String(ch).padStart(2, '0')}</button>
-                ))}
+              <div className="absolute right-0 top-full z-[999] mt-2 max-h-48 w-24 overflow-y-auto rounded-xl border border-slate-700 bg-[#0f172a] shadow-2xl custom-scrollbar">
+                <div className="nexus-dropdown-list flex flex-col gap-0.5 p-1">
+                  {Array.from({ length: 16 }, (_, i) => i + 1).map((ch) => (
+                    <button key={ch} type="button" onClick={() => { onSelectChannel(ch); setIsChannelOpen(false); }} className={`justify-center py-2 font-mono text-xs rounded transition-colors ${selectedChannel === ch ? 'bg-cyan-900/50 text-cyan-300 font-bold' : 'text-slate-300 hover:bg-slate-800'}`}>
+                      {String(ch).padStart(2, '0')}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
           </div>
