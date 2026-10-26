@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ChevronDown, Power, Pause, SlidersHorizontal, Maximize, MoveHorizontal, ChevronLeft, ChevronRight, Lock } from 'lucide-react';
+import { ChevronDown, Power, Pause, SlidersHorizontal, Maximize, MoveHorizontal, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { midiManager } from '../services/midiService';
 
@@ -19,8 +19,6 @@ interface MidiKeyboardProps {
   isSustainActive: boolean;
   onToggleSustain: () => void;
   isStageMode: boolean;
-  isPro: boolean;
-  onRequestPro: () => void;
 }
 
 const OCTAVE_NOTES = [
@@ -34,7 +32,7 @@ const TOTAL_WHITE_KEYS = 14, MIN_KEY_WIDTH = 35, MAX_KEY_WIDTH = 95;
 const VELOCITIES = [30, 64, 100, 127];
 type OpenDropdown = 'velocity' | 'channel' | 'settings' | null;
 
-export function MidiKeyboard({ isConnected, selectedChannel, onSelectChannel, selectedVelocity, onSelectVelocity, onNoteOn, onNoteOff, onDisabledPress, customWhiteKeyColor, customBlackKeyColor, isActive, onToggleActive, isSustainActive, onToggleSustain, isStageMode, isPro, onRequestPro }: MidiKeyboardProps) {
+export function MidiKeyboard({ isConnected, selectedChannel, onSelectChannel, selectedVelocity, onSelectVelocity, onNoteOn, onNoteOff, onDisabledPress, customWhiteKeyColor, customBlackKeyColor, isActive, onToggleActive, isSustainActive, onToggleSustain, isStageMode }: MidiKeyboardProps) {
   const [startOctave, setStartOctave] = useState(() => Number(localStorage.getItem('nexus_key_octave')) || 3);
   const [keyWidth, setKeyWidth] = useState(() => Number(localStorage.getItem('nexus_key_width')) || 60);
   const [isScrollLocked, setIsScrollLocked] = useState(() => localStorage.getItem('nexus_key_scroll') === 'true');
@@ -51,12 +49,12 @@ export function MidiKeyboard({ isConnected, selectedChannel, onSelectChannel, se
   const onNoteOffRef = useRef(onNoteOff), onDisabledPressRef = useRef(onDisabledPress);
 
   useEffect(() => {
-    if (isConnected && isPro) midiManager.sendPitchBend(selectedChannel, pitchBend).catch(() => {});
-  }, [pitchBend, selectedChannel, isConnected, isPro]);
+    if (isConnected) midiManager.sendPitchBend(selectedChannel, pitchBend).catch(() => {});
+  }, [pitchBend, selectedChannel, isConnected]);
 
   useEffect(() => {
-    if (isConnected && isPro) midiManager.sendControlChange(selectedChannel, 1, modWheel).catch(() => {});
-  }, [modWheel, selectedChannel, isConnected, isPro]);
+    if (isConnected) midiManager.sendControlChange(selectedChannel, 1, modWheel).catch(() => {});
+  }, [modWheel, selectedChannel, isConnected]);
 
   useEffect(() => { localStorage.setItem('nexus_key_octave', String(startOctave)); localStorage.setItem('nexus_key_width', String(keyWidth)); localStorage.setItem('nexus_key_scroll', String(isScrollLocked)); }, [startOctave, keyWidth, isScrollLocked]);
   useEffect(() => { onNoteOffRef.current = onNoteOff; }, [onNoteOff]);
@@ -223,16 +221,7 @@ export function MidiKeyboard({ isConnected, selectedChannel, onSelectChannel, se
             <div className="relative flex h-full items-stretch p-0.5" style={{ width: `${TOTAL_WHITE_KEYS * keyWidth}px`, minWidth: `${TOTAL_WHITE_KEYS * keyWidth}px`, marginInline: isScrollLocked ? 'auto' : undefined }}>{renderKeys()}</div>
           </div>
 
-          {/* CONTROLES DE PERFORMANCE PRO (PITCH BEND E MOD WHEEL) */}
           <div className="flex flex-row items-stretch gap-1 px-1 py-2 bg-[#0a0f1c] border-l border-slate-800 z-20 touch-none relative">
-            
-            {!isPro && (
-              <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-30 flex flex-col items-center justify-center cursor-pointer" onClick={onRequestPro}>
-                <Lock size={16} className="text-amber-500 mb-1" />
-                <span className="text-[8px] font-bold text-amber-500 uppercase tracking-wider">PRO</span>
-              </div>
-            )}
-
             <div className="flex flex-col items-center justify-between w-8">
               <span className="text-[8px] font-bold text-slate-500">P.BEND</span>
               <div className="relative flex-1 w-6 bg-[#05080f] rounded-full border border-slate-700 overflow-hidden my-1">
