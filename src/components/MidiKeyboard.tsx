@@ -156,10 +156,10 @@ export function MidiKeyboard({ isConnected, selectedChannel, onSelectChannel, se
   };
 
   return (
-    <section className={`nexus-midi-keyboard flex min-h-0 w-full flex-1 flex-col gap-1 ${isStageMode ? 'rounded-none border-0 p-0' : 'rounded-2xl border p-1 sm:p-1.5'}`} style={{ background: isStageMode ? '#000' : 'linear-gradient(145deg, rgba(17,24,39,0.98), rgba(8,13,25,0.99))', borderColor: 'rgba(148,163,184,0.16)' }}>
+    <section className={`nexus-midi-keyboard flex min-h-0 w-full flex-1 flex-col gap-1 ${isStageMode ? 'rounded-none border-0 p-0' : 'rounded-none border-x-0 border-y px-0 py-1'}`} style={{ background: isStageMode ? '#000' : 'linear-gradient(145deg, rgba(17,24,39,0.98), rgba(8,13,25,0.99))', borderColor: 'rgba(148,163,184,0.16)' }}>
       
       {!isStageMode && (
-        <div className="nexus-midi-controls relative z-[100] flex shrink-0 flex-wrap items-center justify-between gap-2 rounded-xl border px-2 py-1.5 sm:px-3" style={{ background: 'rgba(5,10,22,0.76)', borderColor: 'rgba(148,163,184,0.14)' }}>
+        <div className="nexus-midi-controls relative z-[100] flex shrink-0 flex-wrap items-center justify-between gap-2 rounded-none border-x-0 border-y nexus-safe-x py-1.5" style={{ background: 'rgba(5,10,22,0.76)', borderColor: 'rgba(148,163,184,0.14)' }}>
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <button type="button" onClick={onToggleActive} className={`flex h-9 items-center justify-center gap-1.5 rounded-lg border px-3 text-[11px] font-bold transition-all ${isActive ? 'border-cyan-700/50 bg-cyan-900/30 text-cyan-400' : 'border-slate-700 bg-slate-800/50 text-slate-500'}`}><Power size={15} /><span className="hidden sm:inline">{isActive ? 'LIG' : 'DESL'}</span></button>
             <button type="button" onClick={onToggleSustain} className={`flex h-9 items-center justify-center gap-1.5 rounded-lg border px-3 text-[11px] font-bold transition-all ${isSustainActive ? 'border-amber-500/50 bg-amber-900/30 text-amber-400' : 'border-slate-700 bg-slate-800/50 text-slate-400'}`}><Pause size={15} /><span className="hidden sm:inline">PEDAL</span></button>
@@ -213,10 +213,10 @@ export function MidiKeyboard({ isConnected, selectedChannel, onSelectChannel, se
       )}
 
       <div ref={containerRef} className="flex-1 min-h-0 relative z-0 flex flex-col">
-        <div className={`relative flex-1 flex overflow-hidden ${isStageMode ? 'rounded-none border-0' : 'rounded-xl border border-[#1e293b]'}`}>
+        <div className={`relative flex-1 flex overflow-hidden ${isStageMode ? 'rounded-none border-0' : 'rounded-none border-x-0 border-y border-[#1e293b]'}`}>
           
           {/* PAINEL ESQUERDO (BEND E MOD) */}
-          <div className="flex flex-col gap-3 p-2 bg-[#0a0f1c] border-r border-slate-800 z-20 touch-none w-[70px] shrink-0 items-center shadow-[2px_0_10px_rgba(0,0,0,0.5)]">
+          <div className="flex flex-col gap-3 p-2 bg-[#0a0f1c] border-r border-slate-800 z-20 touch-none w-[70px] shrink-0 items-center shadow-[2px_0_10px_rgba(0,0,0,0.5)]" style={{ width: 'calc(70px + env(safe-area-inset-left, 0px))', paddingLeft: 'calc(0.5rem + env(safe-area-inset-left, 0px))' }}>
             <div className="flex flex-col items-center w-full">
               <span className="text-[9px] font-bold text-slate-400 mb-1 tracking-wider">P.BEND</span>
               <div className="relative w-full h-8 bg-[#05080f] rounded border border-slate-700 shadow-inner flex items-center overflow-hidden">
@@ -253,7 +253,8 @@ export function MidiKeyboard({ isConnected, selectedChannel, onSelectChannel, se
                 
                 <button 
                   onClick={() => scrollKeyboard('right')} 
-                  className="absolute right-1 top-1/2 -translate-y-1/2 z-[999] p-2 bg-black/60 hover:bg-black/90 text-white rounded-full backdrop-blur-sm shadow-xl transition-all active:scale-95 border border-white/10"
+                  style={{ right: 'calc(0.25rem + env(safe-area-inset-right, 0px))' }}
+                  className="absolute top-1/2 -translate-y-1/2 z-[999] p-2 bg-black/60 hover:bg-black/90 text-white rounded-full backdrop-blur-sm shadow-xl transition-all active:scale-95 border border-white/10"
                 >
                   <ChevronRight size={24} />
                 </button>
