@@ -1,6 +1,9 @@
 package com.midi.controller.keyboard;
 
+import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
+import android.view.WindowManager;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
@@ -16,8 +19,35 @@ public class MainActivity extends BridgeActivity {
         
         super.onCreate(savedInstanceState);
         
+        // Permite desenhar sob o recorte da câmera (notch / punch-hole)
+        enableDrawUnderCutout();
+
         // Aplica o Modo Imersivo logo na inicialização
         hideSystemUI();
+    }
+
+    /**
+     * Sem isso, o Android deixa uma faixa PRETA ao lado da câmera
+     * (o modo padrão "default" faz letterbox em landscape).
+     * Definir via código é mais confiável do que só pelo tema XML,
+     * porque o Capacitor troca o tema depois do super.onCreate().
+     */
+    private void enableDrawUnderCutout() {
+        // Cor de fundo da janela = cor do app (evita qualquer faixa preta)
+        getWindow().getDecorView().setBackgroundColor(Color.parseColor("#0A0F1C"));
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            WindowManager.LayoutParams lp = getWindow().getAttributes();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                // ALWAYS: usa o recorte em qualquer orientação (Android 11+)
+                lp.layoutInDisplayCutoutMode =
+                    WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
+            } else {
+                lp.layoutInDisplayCutoutMode =
+                    WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+            }
+            getWindow().setAttributes(lp);
+        }
     }
 
     @Override
