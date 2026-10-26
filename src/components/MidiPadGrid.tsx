@@ -14,7 +14,15 @@ interface MidiPadGridProps {
   isStageMode: boolean;
 }
 
-const DEFAULT_PADS = [
+// CORREÇÃO: Definindo o Tipo do Pad para o TypeScript
+interface PadConfig {
+  id: number;
+  label: string;
+  color: string;
+  border: string;
+}
+
+const DEFAULT_PADS: PadConfig[] = [
   { id: 36, label: 'Bumbo', color: 'bg-blue-600', border: 'border-blue-500' },
   { id: 38, label: 'Caixa', color: 'bg-red-600', border: 'border-red-500' },
   { id: 42, label: 'Chimbal Fech.', color: 'bg-yellow-600', border: 'border-yellow-500' },
@@ -48,7 +56,8 @@ export function MidiPadGrid({ isActive, onNoteOn, onNoteOff, onDisabledPress, se
   const [activePreset, setActivePreset] = useState<1 | 2>(1);
   const [pressedPads, setPressedPads] = useState<Set<number>>(() => new Set());
   
-  const [pads, setPads] = useState(() => {
+  // CORREÇÃO: Tipando o useState como PadConfig[]
+  const [pads, setPads] = useState<PadConfig[]>(() => {
     const saved = localStorage.getItem('nexus_custom_pads');
     return saved ? JSON.parse(saved) : DEFAULT_PADS;
   });
@@ -162,7 +171,7 @@ export function MidiPadGrid({ isActive, onNoteOn, onNoteOff, onDisabledPress, se
 
       <div className="flex-1 w-full min-h-0 p-2 flex items-center justify-center overflow-hidden relative z-0">
         <div className="grid grid-cols-4 grid-rows-2 gap-2 w-full h-full max-w-[1000px] max-h-[500px]">
-          {visiblePads.map((pad, index) => {
+          {visiblePads.map((pad: PadConfig, index: number) => {
             const realIndex = activePreset === 1 ? index : index + 8;
             const isPressed = pressedPads.has(pad.id);
             return (
