@@ -48,10 +48,12 @@ export function MidiKeyboard({ isConnected, selectedChannel, onSelectChannel, se
   const activeNotesRef = useRef<Set<number>>(new Set()), activePointersRef = useRef<Map<number, number>>(new Map());
   const onNoteOffRef = useRef(onNoteOff), onDisabledPressRef = useRef(onDisabledPress);
 
+  // Efeito para enviar o Pitch Bend (0 a 16383)
   useEffect(() => {
     if (isConnected) midiManager.sendPitchBend(selectedChannel, pitchBend).catch(() => {});
   }, [pitchBend, selectedChannel, isConnected]);
 
+  // Efeito para enviar a Modulação (0 a 127)
   useEffect(() => {
     if (isConnected) midiManager.sendControlChange(selectedChannel, 1, modWheel).catch(() => {});
   }, [modWheel, selectedChannel, isConnected]);
@@ -211,47 +213,49 @@ export function MidiKeyboard({ isConnected, selectedChannel, onSelectChannel, se
         <div className={`relative flex-1 flex overflow-hidden ${isStageMode ? 'rounded-none border-0' : 'rounded-xl border border-[#1e293b]'}`}>
           
           {/* CONTROLES DE PERFORMANCE À ESQUERDA */}
-          <div className="flex flex-col gap-2 p-2 bg-[#0a0f1c] border-r border-slate-800 z-20 touch-none w-16 shrink-0 items-center">
-            {/* Pitch Bend (Alavanca Horizontal) */}
-            <div className="flex flex-col items-center w-full">
-              <span className="text-[9px] font-bold text-slate-500 mb-1">P.BEND</span>
-              <div className="relative w-12 h-6 bg-[#05080f] rounded-full border border-slate-700 overflow-hidden flex items-center shadow-inner">
-                <div className="absolute h-3 w-full bg-slate-800/50"></div>
-                <div 
-                  className="absolute h-full bg-cyan-600/50 rounded-full transition-all duration-75"
-                  style={{
-                    left: pitchBend > 8192 ? '50%' : `${(pitchBend / 8192) * 50}%`,
-                    right: pitchBend < 8192 ? '50%' : `${100 - ((pitchBend - 8192) / 8192) * 50}%`
-                  }} 
-                />
-                <div 
-                  className="absolute top-1/2 -translate-y-1/2 w-2 h-4 bg-cyan-300 rounded shadow-md transition-all duration-75 pointer-events-none"
-                  style={{ left: `calc(${(pitchBend / 16383) * 100}% - 4px)` }}
-                />
-              </div>
-              <input 
-                type="range" min="0" max="16383" value={pitchBend} 
-                onChange={(e) => setPitchBend(Number(e.target.value))} 
-                onPointerUp={() => setPitchBend(8192)} onTouchEnd={() => setPitchBend(8192)} onMouseUp={() => setPitchBend(8192)} 
-                className="absolute w-12 h-6 opacity-0 cursor-ew-resize z-30" 
-                style={{ marginTop: '-24px' }}
-              />
-            </div>
+          <div className="flex flex-col gap-3 p-2 bg-[#0a0f1c] border-r border-slate-800 z-20 touch-none w-[70px] shrink-0 items-center shadow-[2px_0_10px_rgba(0,0,0,0.5)]">
             
-            <div className="h-px w-8 bg-slate-800 my-1" />
+            {/* PITCH BEND (Alavanca Horizontal) */}
+            <div className="flex flex-col items-center w-full">
+              <span className="text-[9px] font-bold text-slate-400 mb-1 tracking-wider">P.BEND</span>
+              <div className="relative w-full h-8 bg-[#05080f] rounded border border-slate-700 shadow-inner flex items-center overflow-hidden">
+                 {/* Linha central */}
+                 <div className="absolute top-0 bottom-0 left-1/2 w-px bg-slate-500/50 z-0" />
+                 
+                 {/* Preenchimento que cresce do centro para os lados */}
+                 <div className="absolute inset-y-0 bg-cyan-600/30 z-0" style={{
+                     left: pitchBend > 8192 ? '50%' : `${(pitchBend / 8192) * 50}%`,
+                     right: pitchBend < 8192 ? '50%' : `${100 - ((pitchBend - 8192) / 8192) * 50}%`
+                 }} />
+                 
+                 {/* Pino central (Cabo) */}
+                 <div className="absolute h-full w-3 bg-gradient-to-r from-slate-600 via-slate-400 to-slate-600 rounded-sm shadow-md border border-slate-500 z-10" style={{ left: `calc(${(pitchBend / 16383) * 100}% - 6px)` }} />
 
-            {/* Mod Wheel (Slider Vertical) */}
-            <div className="flex flex-col items-center flex-1 w-full relative">
-              <span className="text-[9px] font-bold text-slate-500 mb-1">MOD</span>
-              <div className="relative w-6 flex-1 bg-[#05080f] rounded-full border border-slate-700 overflow-hidden mb-1">
-                <div className="absolute bottom-0 w-full bg-gradient-to-t from-purple-900 to-purple-500" style={{ height: `${(modWheel / 127) * 100}%` }} />
+                 {/* Input invisível que cobre a área toda */}
+                 <input type="range" min="0" max="16383" value={pitchBend} 
+                   onChange={(e) => setPitchBend(Number(e.target.value))} 
+                   onPointerUp={() => setPitchBend(8192)} onTouchEnd={() => setPitchBend(8192)} onMouseUp={() => setPitchBend(8192)}
+                   className="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-20" 
+                 />
               </div>
-              <input 
-                type="range" min="0" max="127" value={modWheel} 
-                onChange={(e) => setModWheel(Number(e.target.value))} 
-                className="absolute bottom-0 w-6 opacity-0 cursor-ns-resize z-30" 
-                style={{ height: 'calc(100% - 16px)', WebkitAppearance: 'slider-vertical', writingMode: 'vertical-lr', direction: 'rtl' }} 
-              />
+            </div>
+
+            <div className="h-px w-full bg-slate-800 my-1" />
+
+            {/* MOD WHEEL (Slider Vertical) */}
+            <div className="flex flex-col items-center flex-1 w-full relative">
+              <span className="text-[9px] font-bold text-slate-400 mb-1 tracking-wider">MOD</span>
+              <div className="relative w-8 flex-1 bg-[#05080f] rounded-full border border-slate-700 shadow-inner overflow-hidden mb-1">
+                 {/* Preenchimento Roxo */}
+                 <div className="absolute bottom-0 w-full bg-gradient-to-t from-purple-600 to-purple-400" style={{ height: `${(modWheel / 127) * 100}%` }} />
+                 
+                 {/* Input invisível vertical */}
+                 <input type="range" min="0" max="127" value={modWheel} 
+                   onChange={(e) => setModWheel(Number(e.target.value))} 
+                   className="absolute inset-0 w-full h-full opacity-0 cursor-ns-resize z-20" 
+                   style={{ WebkitAppearance: 'slider-vertical', writingMode: 'vertical-lr', direction: 'rtl' }} 
+                 />
+              </div>
             </div>
           </div>
 
