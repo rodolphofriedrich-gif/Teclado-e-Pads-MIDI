@@ -5,6 +5,7 @@ import { midiManager } from './services/midiService';
 import { MidiKeyboard } from './components/MidiKeyboard';
 import { MidiPadGrid } from './components/MidiPadGrid';
 import { DestinationDropdown } from './components/DestinationDropdown';
+import { StatusBar } from '@capacitor/status-bar';
 
 type AppTab = 'keyboard' | 'pads';
 type Toast = { message: string; type: 'info' | 'warn' | 'error' | 'success' };
@@ -41,6 +42,14 @@ export default function App() {
   useEffect(() => { pVRef.current = padsVelocity; localStorage.setItem('nexus_pads_velocity', String(padsVelocity)); }, [padsVelocity]);
   useEffect(() => { tabRef.current = activeTab; }, [activeTab]);
   useEffect(() => { if (!toast) return; const t = setTimeout(() => setToast(null), 3000); return () => clearTimeout(t); }, [toast]);
+  useEffect(() => { if (isStageMode) {
+    // No modo palco, esconde a barra de status
+    StatusBar.hide().catch(() => {});
+  } else {
+    // No modo normal, mostra a barra de status novamente
+    StatusBar.show().catch(() => {});
+  }
+}, [isStageMode]);
 
   const showToast = useCallback((message: string, type: Toast['type'] = 'info') => setToast({ message, type }), []);
 
