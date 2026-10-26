@@ -133,7 +133,7 @@ export default function App() {
       
       {!isStageMode && (
         // O padding-top foi mantido apenas no cabeçalho para o notch não cobrir os botões
-        <header className="nexus-header z-50 flex min-h-[56px] shrink-0 items-center justify-between gap-2 px-3 sm:px-5 pt-[env(safe-area-inset-top)] border-b border-white/5 bg-[#0a0f1c]">
+        <header className="nexus-header z-50 flex min-h-[56px] shrink-0 items-center justify-between gap-2 nexus-safe-x pt-[env(safe-area-inset-top)] border-b border-white/5 bg-[#0a0f1c]">
           <div className="flex min-w-0 items-center gap-2 shrink-0">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-cyan-400/25 bg-cyan-400/10 text-cyan-300"><Music2 size={20} /></div>
             <div className="min-w-0 hidden md:flex items-center gap-2">
@@ -171,13 +171,13 @@ export default function App() {
         )}
 
         {activeTab === 'keyboard' && (
-          <div className="flex min-h-0 flex-1 flex-col z-10 relative px-1 sm:px-2">
+          <div className="flex min-h-0 flex-1 flex-col z-10 relative">
             <MidiKeyboard isConnected={isConnected} selectedChannel={keyboardChannel} onSelectChannel={setKeyboardChannel} selectedVelocity={keyboardVelocity} onSelectVelocity={setKeyboardVelocity} onNoteOn={handleNoteOn} onNoteOff={handleNoteOff} onDisabledPress={handleDisabledPress} customWhiteKeyColor="#f8fafc" customBlackKeyColor="#172033" isActive={isActive} onToggleActive={() => setIsActive((v) => !v)} isSustainActive={isSustainActive} onToggleSustain={() => void toggleSustain()} isStageMode={isStageMode} />
           </div>
         )}
         
         {activeTab === 'pads' && (
-          <div className="flex min-h-0 flex-1 flex-col z-10 relative px-1 sm:px-2">
+          <div className="flex min-h-0 flex-1 flex-col z-10 relative nexus-safe-x-sm">
             <MidiPadGrid isActive={isActive} onNoteOn={handleNoteOn} onNoteOff={handleNoteOff} onDisabledPress={handleDisabledPress} selectedChannel={padsChannel} onSelectChannel={setPadsChannel} selectedVelocity={padsVelocity} onSelectVelocity={setPadsVelocity} isStageMode={isStageMode} />
           </div>
         )}
