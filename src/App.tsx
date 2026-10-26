@@ -123,10 +123,12 @@ export default function App() {
   const isConnected = Boolean(connectedDestination);
 
   return (
-    <div className="nexus-app fixed inset-0 flex h-[100dvh] w-full flex-col overflow-hidden font-sans antialiased select-none bg-black pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
+    // REMOVIDO pt-[env(...)] e pb-[env(...)] AQUI para o fundo preto cobrir tudo
+    <div className="nexus-app fixed inset-0 flex h-[100dvh] w-full flex-col overflow-hidden font-sans antialiased select-none bg-[#0a0f1c]">
       
       {!isStageMode && (
-        <header className="nexus-header z-50 flex min-h-[56px] shrink-0 items-center justify-between gap-2 px-3 sm:px-5 border-b border-white/5 bg-[#0a0f1c]">
+        // ADICIONADO pt-[env(safe-area-inset-top)] AQUI para o notch não cobrir os botões
+        <header className="nexus-header z-50 flex min-h-[56px] shrink-0 items-center justify-between gap-2 px-3 sm:px-5 pt-[env(safe-area-inset-top)] border-b border-white/5 bg-[#0a0f1c]">
           <div className="flex min-w-0 items-center gap-2 shrink-0">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-cyan-400/25 bg-cyan-400/10 text-cyan-300"><Music2 size={20} /></div>
             <div className="min-w-0 hidden md:flex items-center gap-2">
@@ -157,9 +159,10 @@ export default function App() {
         </header>
       )}
 
-      <main className={`flex min-h-0 flex-1 flex-col overflow-hidden ${isStageMode ? 'p-0' : 'p-2 sm:p-3 pb-2'}`}>
+      {/* ADICIONADO pb-[env(safe-area-inset-bottom)] AQUI para o teclado não ficar atrás do botão de voltar do Android */}
+      <main className={`flex min-h-0 flex-1 flex-col overflow-hidden pb-[env(safe-area-inset-bottom)] ${isStageMode ? 'p-0' : 'p-2 sm:p-3 pb-2'}`}>
         {isStageMode && (
-          <button onClick={() => setIsStageMode(false)} className="absolute top-4 right-4 z-[9999] p-3 bg-black/60 hover:bg-black/90 rounded-full text-white backdrop-blur-md border border-white/20 shadow-xl"><Minimize size={24} /></button>
+          <button onClick={() => setIsStageMode(false)} className="absolute top-[calc(env(safe-area-inset-top)+16px)] right-4 z-[9999] p-3 bg-black/60 hover:bg-black/90 rounded-full text-white backdrop-blur-md border border-white/20 shadow-xl"><Minimize size={24} /></button>
         )}
 
         {activeTab === 'keyboard' && (
@@ -192,7 +195,7 @@ export default function App() {
       )}
 
       {toast && (
-        <button type="button" onClick={() => setToast(null)} className={`absolute left-3 right-3 top-16 z-[999] rounded-xl border px-4 py-3 text-left text-xs shadow-2xl ${toast.type === 'error' ? 'border-rose-800/60 bg-rose-950/95 text-rose-200' : toast.type === 'warn' ? 'border-amber-800/60 bg-amber-950/95 text-amber-200' : toast.type === 'success' ? 'border-emerald-800/60 bg-emerald-950/95 text-emerald-200' : 'border-slate-700 bg-slate-900/95 text-slate-200'}`}>
+        <button type="button" onClick={() => setToast(null)} className={`absolute left-3 right-3 top-[calc(env(safe-area-inset-top)+60px)] z-[999] rounded-xl border px-4 py-3 text-left text-xs shadow-2xl ${toast.type === 'error' ? 'border-rose-800/60 bg-rose-950/95 text-rose-200' : toast.type === 'warn' ? 'border-amber-800/60 bg-amber-950/95 text-amber-200' : toast.type === 'success' ? 'border-emerald-800/60 bg-emerald-950/95 text-emerald-200' : 'border-slate-700 bg-slate-900/95 text-slate-200'}`}>
           {toast.message} <span className="ml-2 opacity-70">×</span>
         </button>
       )}
