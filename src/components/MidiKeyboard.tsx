@@ -84,7 +84,12 @@ export function MidiKeyboard({ isConnected, selectedChannel, onSelectChannel, se
     return () => { observer?.disconnect(); window.removeEventListener('resize', updateMinSize); };
   }, []);
 
-  const scrollKeyboard = (direction: 'left' | 'right') => { if (scrollViewportRef.current) scrollViewportRef.current.scrollBy({ left: direction === 'left' ? -300 : 300, behavior: 'smooth' }); };
+  const scrollKeyboard = (direction: 'left' | 'right') => { 
+    if (scrollViewportRef.current) {
+      const amount = direction === 'left' ? -window.innerWidth / 2 : window.innerWidth / 2;
+      scrollViewportRef.current.scrollBy({ left: amount, behavior: 'smooth' }); 
+    }
+  };
 
   const pressNote = (note: number, pointerId: number) => {
     if (!isActive) return;
@@ -210,10 +215,8 @@ export function MidiKeyboard({ isConnected, selectedChannel, onSelectChannel, se
       <div ref={containerRef} className="flex-1 min-h-0 relative z-0 flex flex-col">
         <div className={`relative flex-1 flex overflow-hidden ${isStageMode ? 'rounded-none border-0' : 'rounded-xl border border-[#1e293b]'}`}>
           
-          {/* CONTROLES DE PERFORMANCE À ESQUERDA (Com proteção de notch) */}
-          {/* O pl-[env(safe-area-inset-left)] empurra os controles para a direita se houver notch na esquerda */}
-          <div className="flex flex-col gap-3 p-2 pl-[calc(env(safe-area-inset-left)+8px)] bg-[#0a0f1c] border-r border-slate-800 z-20 touch-none w-[70px] shrink-0 items-center shadow-[2px_0_10px_rgba(0,0,0,0.5)]">
-            
+          {/* PAINEL ESQUERDO (BEND E MOD) */}
+          <div className="flex flex-col gap-3 p-2 bg-[#0a0f1c] border-r border-slate-800 z-20 touch-none w-[70px] shrink-0 items-center shadow-[2px_0_10px_rgba(0,0,0,0.5)]">
             <div className="flex flex-col items-center w-full">
               <span className="text-[9px] font-bold text-slate-400 mb-1 tracking-wider">P.BEND</span>
               <div className="relative w-full h-8 bg-[#05080f] rounded border border-slate-700 shadow-inner flex items-center overflow-hidden">
@@ -235,22 +238,22 @@ export function MidiKeyboard({ isConnected, selectedChannel, onSelectChannel, se
             </div>
           </div>
 
-          {/* ÁREA DAS TECLAS */}
-          <div className="relative flex-1 flex flex-col">
+          {/* ÁREA DAS TECLAS COM OS BOTÕES DE ROLAGEM */}
+          {/* O min-w-0 é essencial para impedir que a div estique e empurre o botão direito para fora da tela */}
+          <div className="relative flex-1 flex flex-col min-w-0">
+            
             {!isScrollLocked && (
               <>
-                {/* Botão Esquerdo */}
                 <button 
                   onClick={() => scrollKeyboard('left')} 
-                  className="absolute left-[calc(env(safe-area-inset-left)+4px)] top-1/2 -translate-y-1/2 z-[999] p-2 bg-black/60 hover:bg-black/90 text-white rounded-full backdrop-blur-sm shadow-xl transition-all active:scale-95 border border-white/10"
+                  className="absolute left-1 top-1/2 -translate-y-1/2 z-[999] p-2 bg-black/60 hover:bg-black/90 text-white rounded-full backdrop-blur-sm shadow-xl transition-all active:scale-95 border border-white/10"
                 >
                   <ChevronLeft size={24} />
                 </button>
                 
-                {/* Botão Direito - Trazido para frente com z-[999] */}
                 <button 
                   onClick={() => scrollKeyboard('right')} 
-                  className="absolute right-[calc(env(safe-area-inset-right)+4px)] top-1/2 -translate-y-1/2 z-[999] p-2 bg-black/60 hover:bg-black/90 text-white rounded-full backdrop-blur-sm shadow-xl transition-all active:scale-95 border border-white/10"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 z-[999] p-2 bg-black/60 hover:bg-black/90 text-white rounded-full backdrop-blur-sm shadow-xl transition-all active:scale-95 border border-white/10"
                 >
                   <ChevronRight size={24} />
                 </button>
