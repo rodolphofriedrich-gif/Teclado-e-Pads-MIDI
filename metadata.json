@@ -1,5 +1,5 @@
 {
-  "name": "Teclado e Pads MIDI",
+  "name": "RT-Music",
   "description": "Teclado e pads MIDI virtuais.",
   "requestFramePermissions": [
     "midi",
