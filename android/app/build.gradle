@@ -1,5 +1,11 @@
 apply plugin: 'com.android.application'
 
+// Dados da keystore: variáveis de ambiente (CI) ou android/keystore.properties (local)
+def keystoreProps = new Properties()
+def keystoreFile = rootProject.file("keystore.properties")
+if (keystoreFile.exists()) { keystoreProps.load(new FileInputStream(keystoreFile)) }
+def ksPath = System.getenv("KEYSTORE_PATH") ?: keystoreProps['storeFile']
+
 android {
     namespace = "com.midi.controller.keyboard"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -16,8 +22,19 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        release {
+            if (ksPath) {
+                storeFile file(ksPath)
+                storePassword System.getenv("KEYSTORE_PASSWORD") ?: keystoreProps['storePassword']
+                keyAlias System.getenv("KEY_ALIAS") ?: keystoreProps['keyAlias']
+                keyPassword System.getenv("KEY_PASSWORD") ?: keystoreProps['keyPassword']
+            }
+        }
+    }
     buildTypes {
         release {
+            if (ksPath) { signingConfig signingConfigs.release }
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }

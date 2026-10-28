@@ -137,7 +137,7 @@ export default function App() {
           <div className="flex min-w-0 items-center gap-2 shrink-0">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-cyan-400/25 bg-cyan-400/10 text-cyan-300"><Music2 size={20} /></div>
             <div className="min-w-0 hidden md:flex items-center gap-2">
-              <h1 className="text-sm font-extrabold tracking-wide text-white">RT-Music</h1>
+              <h1 className="text-sm font-extrabold tracking-wide text-white">Teclado e Pads</h1>
               <span className={`h-2.5 w-2.5 rounded-full ml-1 ${isConnected ? 'bg-emerald-400' : 'bg-rose-500'}`} />
             </div>
           </div>
@@ -156,7 +156,7 @@ export default function App() {
             <button onClick={() => setIsStageMode(true)} title="Modo Palco" className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-700 bg-slate-800 text-slate-300 hover:text-white transition-colors">
               <Maximize size={18} />
             </button>
-            <div className="hidden sm:block w-[130px] lg:w-[200px]">
+            <div className="hidden sm:block w-[160px] lg:w-[200px]">
               <DestinationDropdown destinations={destinations} connectedDestination={connectedDestination} onConnect={connectDestination} onDisconnect={disconnectDestination} onScanBle={handleScanBle} onRefresh={() => void refreshDestinations()} isScanningBle={isScanningBle} />
             </div>
             <button onClick={() => setShowExitConfirm(true)} title="Sair" className="flex h-9 w-9 items-center justify-center rounded-full border border-rose-900/50 bg-rose-950/30 text-rose-400 hover:bg-rose-900/50 hover:text-rose-300 transition-colors"><LogOut size={16} /></button>

@@ -19,6 +19,9 @@ public class MainActivity extends BridgeActivity {
         
         super.onCreate(savedInstanceState);
         
+        // Mantém a tela ligada enquanto o app está aberto (útil ao tocar)
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
         // Permite desenhar sob o recorte da câmera (notch / punch-hole)
         enableDrawUnderCutout();
 
