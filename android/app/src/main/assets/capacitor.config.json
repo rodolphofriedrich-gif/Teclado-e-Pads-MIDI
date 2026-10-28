@@ -1,6 +1,6 @@
 {
 	"appId": "com.rodolpho.tecladoepads.midi",
-	"appName": "Teclado MIDI",
+	"appName": "TR-Music",
 	"webDir": "dist",
 	"bundledWebRuntime": false,
 	"server": {
