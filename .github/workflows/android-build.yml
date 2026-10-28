@@ -38,6 +38,6 @@ jobs:
     - name: Salvar o APK
       uses: actions/upload-artifact@v4
       with:
-        name: Teclado-e-Pads-APK
-        path: dist/Teclado-e-Pads.apk
+        name: RT-Music-APK
+        path: dist/RT-Music.apk
         retention-days: 15
