@@ -1,0 +1,46 @@
+name: Build Release (assinado)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 22
+    - uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '21'
+
+    - name: Instalar e compilar web
+      run: |
+        npm install
+        npm run build
+        npx cap sync android
+
+    - name: Restaurar keystore (secret em base64)
+      run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > "$RUNNER_TEMP/release.jks"
+
+    - name: Gerar APK e AAB assinados
+      env:
+        KEYSTORE_PATH: ${{ runner.temp }}/release.jks
+        KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+        KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+        KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+      run: |
+        cd android
+        chmod +x gradlew
+        ./gradlew assembleRelease bundleRelease
+
+    - name: Salvar artefatos
+      uses: actions/upload-artifact@v4
+      with:
+        name: Teclado-e-Pads-Release
+        path: |
+          android/app/build/outputs/apk/release/*.apk
+          android/app/build/outputs/bundle/release/*.aab
+        retention-days: 30
