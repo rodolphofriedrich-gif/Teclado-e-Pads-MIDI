@@ -4,6 +4,7 @@ import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.WindowManager;
+import androidx.activity.OnBackPressedCallback;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
@@ -27,6 +28,35 @@ public class MainActivity extends BridgeActivity {
 
         // Aplica o Modo Imersivo logo na inicialização
         hideSystemUI();
+
+        // Botão/gesto voltar: repassa para o app em vez de fechar direto
+        setupBackButton();
+    }
+
+    /**
+     * Intercepta o botão/gesto "voltar". Quem decide o que fazer é o app web
+     * (sair do modo palco, mostrar/cancelar a confirmação de saída).
+     * Se a página web não responder (ainda carregando ou com erro),
+     * o app fecha normalmente, para o usuário nunca ficar "preso".
+     */
+    private void setupBackButton() {
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (getBridge() == null || getBridge().getWebView() == null) {
+                    finish();
+                    return;
+                }
+                getBridge().getWebView().evaluateJavascript(
+                    "(function(){ if (window.__rtBackHandler) { window.__rtBackHandler(); return 'ok'; } return 'none'; })()",
+                    value -> {
+                        if (value == null || !value.contains("ok")) {
+                            finish();
+                        }
+                    }
+                );
+            }
+        });
     }
 
     /**
