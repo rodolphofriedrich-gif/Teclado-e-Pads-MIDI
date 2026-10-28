@@ -43,6 +43,21 @@ export default function App() {
   useEffect(() => { tabRef.current = activeTab; }, [activeTab]);
   useEffect(() => { if (!toast) return; const t = setTimeout(() => setToast(null), 3000); return () => clearTimeout(t); }, [toast]);
 
+  // Botão/gesto "voltar" do Android (chamado pelo MainActivity.java):
+  // 1) se a confirmação de saída está aberta, fecha; 2) se está no modo palco, sai dele;
+  // 3) caso contrário, abre a confirmação de saída.
+  const backStateRef = useRef({ isStageMode: false, showExitConfirm: false });
+  useEffect(() => { backStateRef.current = { isStageMode, showExitConfirm }; }, [isStageMode, showExitConfirm]);
+  useEffect(() => {
+    (window as any).__rtBackHandler = () => {
+      const s = backStateRef.current;
+      if (s.showExitConfirm) setShowExitConfirm(false);
+      else if (s.isStageMode) setIsStageMode(false);
+      else setShowExitConfirm(true);
+    };
+    return () => { delete (window as any).__rtBackHandler; };
+  }, []);
+
   // ESCONDE A BARRA DE STATUS DEFINITIVAMENTE
   useEffect(() => {
     StatusBar.hide().catch(() => {});
