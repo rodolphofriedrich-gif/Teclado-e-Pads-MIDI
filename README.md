@@ -37,41 +37,18 @@ O **Teclado e Pads MIDI** é um aplicativo que envia mensagens MIDI (Note On/Off
 
 ## 📸 Screenshots
 
-*(Adicione aqui imagens do seu app rodando. Exemplo:)*
-
 | Teclado | Pads |
 | :---: | :---: |
 | ![Teclado](https://via.placeholder.com/400x200?text=Screenshot+do+Teclado) | ![Pads](https://via.placeholder.com/400x200?text=Screenshot+dos+Pads) |
 
 ---
 
-## 🛠️ Tecnologias Utilizadas
+## 🗺️ Roadmap (Próximas Atualizações)
+- **Suporte a escalas musicais** (ex: Pentatônica).
+- **Modo Retrato** (Portrait) otimizado.
+- **Gravação de performances** (MIDI File Export).
+- **Metrônomo integrado**.
 
-- **React 18** com **TypeScript** — Interface de usuário moderna e reativa.
-- **Capacitor 6** — Para acesso às APIs nativas do Android (MIDI, Haptics, StatusBar).
-- **Tailwind CSS** — Estilização rápida e responsiva.
-- **Vite** — Build tool ultrarrápida.
-- **Plugin Nativo Customizado (Android/Java)** — Para lidar com o MidiManager do Android e comunicação BLE.
-
----
-
-## 🚀 Como Compilar o Projeto (Para Desenvolvedores)
-
-Se você quer contribuir ou gerar seu próprio APK, siga os passos abaixo:
-
-### Pré-requisitos
-- Node.js (v18 ou superior)
-- Android Studio (com Android SDK instalado)
-- Java JDK 17 ou 21
-
-### Passo a Passo
-
-1. Clone o repositório:
-   ```bash
-   git clone https://github.com/seu-usuario/Teclado-e-Pads-MIDI.git
-   cd Teclado-e-Pads-MIDIReadne
-npm install
-npm run build
-npx cap sync android
-npx cap open android
+## 📄 Licença
+Este projeto é de uso proprietário. Todos os direitos reservados.
    
