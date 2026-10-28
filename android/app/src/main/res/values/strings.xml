@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Teclado e Pads MIDI</string>
-    <string name="title_activity_main">Teclado e Pads MIDI</string>
+    <string name="app_name">RT-Music</string>
+    <string name="title_activity_main">RT-Music</string>
     <string name="package_name">com.rodolpho.tecladoepads.midi</string>
     <string name="custom_url_scheme">com.rodolpho.tecladoepads.midi</string>
 </resources>
