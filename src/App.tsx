@@ -137,7 +137,7 @@ export default function App() {
           <div className="flex min-w-0 items-center gap-2 shrink-0">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-cyan-400/25 bg-cyan-400/10 text-cyan-300"><Music2 size={20} /></div>
             <div className="min-w-0 hidden md:flex items-center gap-2">
-              <h1 className="text-sm font-extrabold tracking-wide text-white">Teclado e Pads</h1>
+              <h1 className="text-sm font-extrabold tracking-wide text-white">RT-Music</h1>
               <span className={`h-2.5 w-2.5 rounded-full ml-1 ${isConnected ? 'bg-emerald-400' : 'bg-rose-500'}`} />
             </div>
           </div>
