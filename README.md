@@ -70,3 +70,8 @@ Se você quer contribuir ou gerar seu próprio APK, siga os passos abaixo:
    ```bash
    git clone https://github.com/seu-usuario/Teclado-e-Pads-MIDI.git
    cd Teclado-e-Pads-MIDIReadne
+npm install
+npm run build
+npx cap sync android
+npx cap open android
+   
