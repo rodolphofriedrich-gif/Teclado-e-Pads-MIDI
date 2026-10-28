@@ -1,4 +1,4 @@
-name: Build APK — Teclado e Pads MIDI
+name: Build APK — RT-Music
 
 on:
   push:
@@ -44,11 +44,11 @@ jobs:
     - name: Renomear APK
       run: |
         mkdir -p dist
-        cp android/app/build/outputs/apk/debug/app-debug.apk dist/Teclado-e-Pads-MIDI.apk
+        cp android/app/build/outputs/apk/debug/app-debug.apk dist/RT-Music.apk
 
     - name: Salvar o APK gerado como Artefato
       uses: actions/upload-artifact@v4
       with:
-        name: Teclado-e-Pads-MIDI-APK
-        path: dist/Teclado-e-Pads-MIDI.apk
+        name: RT-Music-APK
+        path: dist/RT-Music.apk
         retention-days: 15
