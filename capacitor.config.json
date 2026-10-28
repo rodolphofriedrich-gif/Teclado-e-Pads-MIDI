@@ -1,6 +1,6 @@
 {
   "appId": "com.rodolpho.tecladoepads.midi",
-  "appName": "Teclado e Pads",
+  "appName": "RT-Music",
   "webDir": "dist",
   "server": {
     "androidScheme": "https"
