@@ -1,4 +1,4 @@
-# 🎹 Teclado e Pads MIDI
+# 🎹 RT-Music
 
 Um controlador MIDI virtual profissional para Android, projetado para músicos, produtores e entusiastas que desejam transformar seu celular ou tablet em um instrumento completo.
 
