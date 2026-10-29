@@ -1,0 +1,27 @@
+# Dependências
+node_modules/
+
+# Build do Vite / React
+dist/
+build/
+
+# Android (Arquivos gerados no build)
+android/app/build/
+android/build/
+android/.gradle/
+android/local.properties
+
+# Arquivos de assinatura (NUNCA devem ser públicos)
+*.jks
+*.keystore
+release.keystore
+
+# Variáveis de ambiente e segredos
+.env
+.env.local
+
+# Sistema operacional e IDEs
+.DS_Store
+.vscode/
+.idea/
+*.log
