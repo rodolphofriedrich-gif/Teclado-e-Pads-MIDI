@@ -39,7 +39,7 @@ O **Teclado e Pads MIDI** é um aplicativo que envia mensagens MIDI (Note On/Off
 
 | Teclado | Pads |
 | :---: | :---: |
-| ![Teclado](https://via.placeholder.com/400x200?text=Screenshot+do+Teclado) | ![Pads](https://via.placeholder.com/400x200?text=Screenshot+dos+Pads) |
+|<img width="1600" height="738" alt="WhatsApp Image 2026-10-29 at 14 19 23" src="https://github.com/user-attachments/assets/dedd837d-8312-44dd-b1c6-282d3cd6fdfb" /> |<img width="1600" height="738" alt="PADS" src="https://github.com/user-attachments/assets/2ad01e27-7d9e-4e26-8c17-c8d1b63db850" />
 
 ---
 
@@ -50,5 +50,25 @@ O **Teclado e Pads MIDI** é um aplicativo que envia mensagens MIDI (Note On/Off
 - **Metrônomo integrado**.
 
 ## 📄 Licença
-Este projeto é de uso proprietário. Todos os direitos reservados.
-   
+Copyright (c) [2026] [Rodolpho Roger Friedrich Alves] (RT-Music)
+
+Todos os direitos reservados.
+
+Este software e seu código-fonte são propriedade exclusiva do autor.
+Nenhuma parte deste software pode ser reproduzida, distribuída, modificada ou utilizada de qualquer forma, comercial ou não, sem a permissão prévia e por escrito do detentor dos direitos autorais.
+
+---
+
+## 🛠️ Tecnologias Utilizadas
+
+- **React 18** com **TypeScript** — Interface de usuário moderna e reativa.
+- **Capacitor 6** — Para acesso às APIs nativas do Android (MIDI, Haptics, StatusBar).
+- **Tailwind CSS** — Estilização rápida e responsiva.
+- **Vite** — Build tool ultrarrápida.
+- **Plugin Nativo Customizado (Android/Java)** — Para lidar com o MidiManager do Android e comunicação BLE.
+
+---
+👤 Autor
+Rodolpho
+
+GitHub: @rodolphophfriedrich-gif
